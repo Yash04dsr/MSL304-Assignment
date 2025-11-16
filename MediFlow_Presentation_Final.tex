@@ -1,0 +1,622 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\useinnertheme{rectangles}
+
+% Color definitions
+\definecolor{MediBlue}{RGB}{52, 152, 219}
+\definecolor{DarkBlue}{RGB}{41, 128, 185}
+\definecolor{LightBlue}{RGB}{174, 214, 241}
+\definecolor{MediGreen}{RGB}{46, 204, 113}
+\definecolor{DarkGreen}{RGB}{39, 174, 96}
+
+% Theme customization
+\setbeamercolor{structure}{fg=DarkBlue}
+\setbeamercolor{palette primary}{bg=DarkBlue,fg=white}
+\setbeamercolor{palette secondary}{bg=MediBlue,fg=white}
+\setbeamercolor{palette tertiary}{bg=DarkGreen,fg=white}
+\setbeamercolor{palette quaternary}{bg=MediGreen,fg=white}
+\setbeamercolor{titlelike}{parent=palette primary}
+\setbeamercolor{block title}{bg=MediBlue,fg=white}
+\setbeamercolor{block body}{bg=LightBlue!20}
+\setbeamercolor{block title example}{bg=MediGreen,fg=white}
+\setbeamercolor{block body example}{bg=MediGreen!20}
+\setbeamercolor{block title alerted}{bg=red!80,fg=white}
+\setbeamercolor{block body alerted}{bg=red!20}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray}
+}
+
+\title{MediFlow: Healthcare Staff Optimization}
+\subtitle{Web-Based Intelligent Scheduling Platform}
+\author{Yash Sakhare}
+\institute{MSL304 Assignment}
+\date{\today}
+
+\begin{document}
+
+% Title Slide
+\frame{\titlepage}
+
+% Table of Contents
+\begin{frame}{Outline}
+    \tableofcontents
+\end{frame}
+
+% ============================================================
+% SECTION 1: Problem Overview
+% ============================================================
+\section{Problem Statement}
+
+\begin{frame}{Healthcare Staffing Challenge}
+    \begin{block}{The Problem}
+        Healthcare facilities face critical challenges in staff scheduling:
+        \begin{itemize}
+            \item \textbf{Patient demand} varies throughout the week
+            \item \textbf{Staff availability} is constrained
+            \item \textbf{Cost optimization} while maintaining service quality
+            \item \textbf{Bottleneck identification} in patient flow
+        \end{itemize}
+    \end{block}
+    
+    \begin{exampleblock}{Solution Approach}
+        Integrated web platform combining:
+        \begin{itemize}
+            \item Integer Linear Programming for staff optimization
+            \item M/M/c Queue Theory for bottleneck analysis
+            \item Modern web interface for real-time configuration
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% SECTION 2: Mathematical Foundation
+% ============================================================
+\section{Mathematical Model}
+
+\begin{frame}{Integer Linear Programming Formulation}
+    \begin{block}{Decision Variables}
+        $x_{is} \in \{0,1\}$ : Staff member $i$ works shift $s$
+    \end{block}
+    
+    \begin{block}{Objective Function}
+        \[
+        \text{Minimize: } \sum_{i \in \text{Staff}} \sum_{s \in \text{Shifts}} c_i \cdot x_{is}
+        \]
+        where $c_i$ is the cost per shift for staff member $i$
+    \end{block}
+    
+    \begin{block}{Key Constraints}
+        \begin{itemize}
+            \item Shift requirements: $\sum_{i} x_{is} \geq R_s$ for each shift $s$
+            \item Max hours: $\sum_{s} x_{is} \leq H_i$ for each staff $i$
+            \item Availability: $x_{is} = 0$ if staff $i$ unavailable for shift $s$
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Queue Theory Integration}
+    \begin{block}{M/M/c Queue Model}
+        \begin{itemize}
+            \item $\lambda$ : Patient arrival rate (patients/hour)
+            \item $\mu$ : Service rate per staff (patients/hour)
+            \item $c$ : Number of servers (staff members)
+            \item $\rho = \frac{\lambda}{\mu \cdot c}$ : Traffic intensity
+        \end{itemize}
+    \end{block}
+    
+    \begin{alertblock}{Bottleneck Detection Criteria}
+        \begin{itemize}
+            \item \textcolor{red}{Critical}: $\rho \geq 0.95$ (System overload)
+            \item \textcolor{orange}{Warning}: $0.85 \leq \rho < 0.95$ (High congestion)
+            \item \textcolor{yellow}{Caution}: $0.75 \leq \rho < 0.85$ (Moderate load)
+            \item \textcolor{green}{Healthy}: $\rho < 0.75$ (Normal operation)
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+% ============================================================
+% SECTION 3: Web Platform Architecture
+% ============================================================
+\section{Web Platform Architecture}
+
+\begin{frame}{Technology Stack}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Backend}
+                \begin{itemize}
+                    \item \textbf{Flask}: REST API server
+                    \item \textbf{PuLP}: LP optimization
+                    \item \textbf{SimPy}: Queue simulation
+                    \item \textbf{Python 3.11}: Core logic
+                \end{itemize}
+            \end{block}
+        \end{column}
+        
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Frontend}
+                \begin{itemize}
+                    \item \textbf{Bootstrap 5}: UI framework
+                    \item \textbf{JavaScript}: Interactive logic
+                    \item \textbf{CSS3}: Modern animations
+                    \item \textbf{JSON}: Data exchange
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+    
+    \vspace{0.5cm}
+    
+    \begin{exampleblock}{Three-Tier Architecture}
+        Presentation Layer $\rightarrow$ Business Logic $\rightarrow$ Data Layer
+    \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% SECTION 4: Core Web Functionalities
+% ============================================================
+\section{Web Platform Features}
+
+\begin{frame}[fragile]{Feature 1: Patient Flow Simulator}
+    \begin{block}{Functionality}
+        Real-time simulation of patient flow with bottleneck detection
+    \end{block}
+    
+    \begin{columns}[T]
+        \begin{column}{0.58\textwidth}
+            \begin{exampleblock}{Inputs}
+                \begin{itemize}
+                    \item Arrival rates by department
+                    \item Service times per stage
+                    \item Number of staff per station
+                    \item Simulation duration
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+        
+        \begin{column}{0.38\textwidth}
+            \begin{alertblock}{Outputs}
+                \begin{itemize}
+                    \item Queue lengths
+                    \item Wait times
+                    \item Utilization ($\rho$)
+                    \item Bottlenecks
+                \end{itemize}
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+    
+    \vspace{0.3cm}
+    
+    \begin{lstlisting}[language=Python, basicstyle=\ttfamily\tiny]
+# Traffic intensity calculation
+rho = arrival_rate / (service_rate * num_staff)
+bottleneck = "Critical" if rho >= 0.95 else "Healthy"
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Feature 2: Staff Rota Optimizer}
+    \begin{block}{Functionality}
+        Automated staff scheduling using Integer Linear Programming
+    \end{block}
+    
+    \begin{exampleblock}{Interactive Configuration}
+        \begin{itemize}
+            \item \textbf{Checkbox interface}: Select available shifts (Mon-Fri, AM/PM)
+            \item \textbf{Cost input}: Set cost per shift for each staff member
+            \item \textbf{Max hours}: Define weekly hour limits
+            \item \textbf{Shift requirements}: Specify minimum staff per shift
+        \end{itemize}
+    \end{exampleblock}
+    
+    \begin{alertblock}{Intelligent Features}
+        \begin{itemize}
+            \item \textbf{Infeasibility detection}: Identifies impossible schedules
+            \item \textbf{Cost minimization}: Finds optimal assignment
+            \item \textbf{Constraint validation}: Real-time feasibility check
+        \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Feature 3: Checkbox-Based Input System}
+    \begin{block}{Problem Solved}
+        Previous text-based input caused parsing errors and typos
+    \end{block}
+    
+    \begin{exampleblock}{Modern Solution}
+        Each staff member gets a card with:
+        \begin{itemize}
+            \item 10 checkboxes (5 days $\times$ 2 shifts)
+            \item Select All / Clear All buttons
+            \item Cost and max hours inputs
+            \item Visual feedback on selection
+        \end{itemize}
+    \end{exampleblock}
+    
+    \begin{lstlisting}[language=JavaScript, basicstyle=\ttfamily\tiny]
+// Collect configuration from checkboxes
+const availability = [];
+document.querySelectorAll('.shift-checkbox:checked')
+    .forEach(cb => availability.push(cb.value));
+config.staff[name].availability = availability;
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Feature 4: Infeasibility Analysis}
+    \begin{block}{Intelligent Error Handling}
+        When optimization fails, system provides detailed analysis
+    \end{block}
+    
+    \begin{alertblock}{4 Types of Issues Detected}
+        \begin{enumerate}
+            \item \textbf{Insufficient Staff}: Not enough people available
+            \item \textbf{No Flexibility}: Staff can't cover required shifts
+            \item \textbf{Overworked Staff}: Hours exceed maximum limits
+            \item \textbf{Capacity Shortfall}: Total capacity below demand
+        \end{enumerate}
+    \end{alertblock}
+    
+    \begin{exampleblock}{Actionable Suggestions}
+        \begin{itemize}
+            \item "Increase Tech\_D's max\_hours from 40 to 56"
+            \item "Add availability for Nurse\_A on Mon\_AM, Tue\_AM"
+            \item "Hire 1 additional staff member"
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Feature 5: Real-Time Configuration Testing}
+    \begin{block}{Test Without Saving}
+        Users can validate configurations before committing changes
+    \end{block}
+    
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \begin{exampleblock}{Workflow}
+                \begin{enumerate}
+                    \item Modify staff availability
+                    \item Click "Test Configuration"
+                    \item View feasibility results
+                    \item Adjust if infeasible
+                    \item Save when satisfied
+                \end{enumerate}
+            \end{exampleblock}
+        \end{column}
+        
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Benefits}
+                \begin{itemize}
+                    \item No data corruption
+                    \item Instant feedback
+                    \item Iterative refinement
+                    \item Risk-free exploration
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Feature 6: Modern UI/UX Design}
+    \begin{block}{Visual Design Elements}
+        \begin{itemize}
+            \item \textbf{Gradient backgrounds}: Purple-blue color scheme
+            \item \textbf{Glass morphism}: Translucent navbar effects
+            \item \textbf{Smooth animations}: 60 FPS transitions
+            \item \textbf{Toast notifications}: Non-intrusive feedback
+            \item \textbf{Color-coded results}: Red (critical), Yellow (caution), Green (healthy)
+        \end{itemize}
+    \end{block}
+    
+    \begin{exampleblock}{Responsive Design}
+        \begin{itemize}
+            \item Tab-based navigation (Simulator | Optimizer | Configuration)
+            \item Card-based layouts for staff management
+            \item Mobile-friendly Bootstrap grid system
+            \item Accessible form controls with labels
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% SECTION 5: Backend Implementation
+% ============================================================
+\section{Backend Implementation}
+
+\begin{frame}[fragile]{Dynamic Configuration Reload}
+    \begin{alertblock}{Problem}
+        Configuration changes weren't reflected in optimization results
+    \end{alertblock}
+    
+    \begin{exampleblock}{Solution}
+        \texttt{get\_current\_config()} function reloads from file each time
+    \end{exampleblock}
+    
+    \begin{lstlisting}[language=Python, basicstyle=\ttfamily\tiny]
+def get_current_config():
+    """Reload config from file to get latest changes"""
+    with open('config.json', 'r') as f:
+        return json.load(f)
+
+def run_optimisation():
+    config = get_current_config()  # Fresh data every time
+    # ... optimization logic ...
+    \end{lstlisting}
+    
+    \begin{block}{Impact}
+        Users can modify configurations and see immediate results
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Infeasibility Analysis Engine}
+    \begin{lstlisting}[language=Python, basicstyle=\ttfamily\tiny]
+def analyze_infeasibility(config):
+    issues = []
+    suggestions = []
+    
+    # Check 1: Insufficient staff
+    available_staff = len(config['staff'])
+    max_requirement = max(config['shift_requirements'].values())
+    if available_staff < max_requirement:
+        issues.append("Insufficient staff available")
+        suggestions.append(f"Hire {max_requirement - available_staff} more staff")
+    
+    # Check 2: No flexibility (staff can't cover shifts)
+    for shift in config['shift_requirements']:
+        available_for_shift = [s for s, data in config['staff'].items() 
+                               if shift in data['availability']]
+        if len(available_for_shift) < config['shift_requirements'][shift]:
+            issues.append(f"Not enough staff available for {shift}")
+    
+    # ... more checks ...
+    return {"issues": issues, "suggestions": suggestions}
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{REST API Endpoints}
+    \begin{block}{Core API Routes}
+        \begin{description}
+            \item[POST /api/simulate] Run patient flow simulation
+            \item[POST /api/optimize] Execute staff optimization
+            \item[POST /api/config/test] Test configuration feasibility
+            \item[GET /api/config] Retrieve current configuration
+            \item[PUT /api/config] Update and save configuration
+        \end{description}
+    \end{block}
+    
+    \begin{lstlisting}[language=Python, basicstyle=\ttfamily\tiny]
+@app.route('/api/optimize', methods=['POST'])
+def optimize():
+    result = run_optimisation()
+    if result['status'] == 'infeasible':
+        analysis = result['analysis']
+        return jsonify({"status": "infeasible", 
+                       "issues": analysis['issues'],
+                       "suggestions": analysis['suggestions']})
+    return jsonify({"status": "success", 
+                   "assignments": result['assignments']})
+    \end{lstlisting}
+\end{frame}
+
+% ============================================================
+% SECTION 6: Key Innovations
+% ============================================================
+\section{Key Innovations}
+
+\begin{frame}{Technical Innovations}
+    \begin{enumerate}
+        \item \textbf{Scientific Bottleneck Detection}
+        \begin{itemize}
+            \item Replaced arbitrary thresholds with M/M/c traffic intensity
+            \item Little's Law validation: $L = \lambda \cdot W$
+            \item Four-level classification system
+        \end{itemize}
+        
+        \item \textbf{Error-Proof Input Interface}
+        \begin{itemize}
+            \item Checkbox-based selection eliminates parsing errors
+            \item Visual feedback with select all/clear all
+            \item Zero typing required for shift selection
+        \end{itemize}
+        
+        \item \textbf{Intelligent Infeasibility Handling}
+        \begin{itemize}
+            \item Automatic constraint conflict detection
+            \item Specific, actionable suggestions with exact values
+            \item Real-time feasibility testing
+        \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{User Experience Enhancements}
+    \begin{block}{Workflow Improvements}
+        \begin{itemize}
+            \item \textbf{Automatic tab switching}: Results appear in correct tab
+            \item \textbf{Null safety}: All DOM operations validated
+            \item \textbf{Toast notifications}: Non-blocking status updates
+            \item \textbf{Loading indicators}: Clear feedback during processing
+            \item \textbf{Color coding}: Instant visual status recognition
+        \end{itemize}
+    \end{block}
+    
+    \begin{exampleblock}{Developer Experience}
+        \begin{itemize}
+            \item \textbf{Clean separation}: Frontend/Backend clearly divided
+            \item \textbf{RESTful design}: Standard HTTP methods and JSON
+            \item \textbf{Modular architecture}: Easy to extend and maintain
+            \item \textbf{Comprehensive testing}: 10 test cases documented
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% SECTION 7: Results & Validation
+% ============================================================
+\section{Results \& Validation}
+
+\begin{frame}{Example: Feasible Schedule}
+    \begin{exampleblock}{Input Configuration}
+        \begin{itemize}
+            \item 4 staff members (2 Nurses, 2 Technicians)
+            \item Each available Mon-Fri, both AM/PM shifts
+            \item Max hours: 40 per week
+            \item Shift requirements: 2 staff per shift
+        \end{itemize}
+    \end{exampleblock}
+    
+    \begin{block}{Optimization Result}
+        \begin{itemize}
+            \item \textcolor{green}{\textbf{Status: FEASIBLE}}
+            \item Total cost: \$2,400
+            \item All shifts covered
+            \item No staff exceeds 40 hours
+            \item Balanced workload distribution
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Example: Infeasible Schedule}
+    \begin{alertblock}{Input Configuration}
+        \begin{itemize}
+            \item Nurse\_A availability: Only Wed-Fri (reduced from Mon-Fri)
+            \item Other staff: Unchanged
+            \item Same shift requirements: 2 staff per shift
+        \end{itemize}
+    \end{alertblock}
+    
+    \begin{block}{System Response}
+        \begin{itemize}
+            \item \textcolor{red}{\textbf{Status: INFEASIBLE}}
+            \item \textbf{Issue}: Tech\_D needs 56 hours but max is 40
+            \item \textbf{Suggestion 1}: Increase Tech\_D's max\_hours to 56
+            \item \textbf{Suggestion 2}: Add Nurse\_A availability for Mon/Tue
+            \item \textbf{Suggestion 3}: Hire additional staff member
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Validation Through Testing}
+    \begin{block}{Test Suite Coverage}
+        10 comprehensive test cases covering:
+        \begin{itemize}
+            \item \textbf{Feasible scenarios}: Standard, minimal, full, distributed (6 cases)
+            \item \textbf{Infeasible scenarios}: Understaffed, overworked, no flexibility (3 cases)
+            \item \textbf{Edge cases}: Last-minute changes (1 case)
+        \end{itemize}
+    \end{block}
+    
+    \begin{exampleblock}{Validation Results}
+        \begin{itemize}
+            \item All feasible cases produce valid schedules
+            \item All infeasible cases correctly detected with explanations
+            \item Configuration changes properly reflected in results
+            \item No JavaScript errors in browser console
+            \item Checkbox interface prevents all input errors
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% SECTION 8: Impact & Future Work
+% ============================================================
+\section{Conclusions}
+
+\begin{frame}{System Impact}
+    \begin{block}{Operational Benefits}
+        \begin{itemize}
+            \item \textbf{Cost reduction}: Automated optimization saves planning time
+            \item \textbf{Quality assurance}: Bottleneck detection prevents service degradation
+            \item \textbf{Flexibility}: Easy configuration changes for dynamic needs
+            \item \textbf{Transparency}: Clear explanations for infeasible schedules
+        \end{itemize}
+    \end{block}
+    
+    \begin{exampleblock}{Technical Achievements}
+        \begin{itemize}
+            \item Integration of optimization and simulation
+            \item User-friendly web interface with modern design
+            \item Robust error handling and validation
+            \item Production-ready with comprehensive testing
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Future Enhancements}
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Short-term}
+                \begin{itemize}
+                    \item Multi-week scheduling
+                    \item Staff preference weights
+                    \item Export to PDF/Excel
+                    \item Email notifications
+                \end{itemize}
+            \end{block}
+        \end{column}
+        
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Long-term}
+                \begin{itemize}
+                    \item Machine learning predictions
+                    \item Mobile application
+                    \item Database backend
+                    \item Multi-facility support
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+    
+    \vspace{0.5cm}
+    
+    \begin{exampleblock}{Scalability}
+        Architecture supports extension to:
+        \begin{itemize}
+            \item Larger healthcare networks
+            \item Multiple departments simultaneously
+            \item Historical data analysis and trend prediction
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+% ============================================================
+% Final Slide
+% ============================================================
+\begin{frame}{Thank You}
+    \begin{center}
+        \Large \textbf{MediFlow: Healthcare Staff Optimization}
+        
+        \vspace{1cm}
+        
+        \normalsize
+        \textbf{Yash Sakhare}\\
+        MSL304 Assignment\\
+        
+        \vspace{1cm}
+        
+        \begin{block}{Project Repository}
+            GitHub: MSL304-Assignment
+        \end{block}
+        
+        \vspace{0.5cm}
+        
+        \textit{Questions?}
+    \end{center}
+\end{frame}
+
+\end{document}

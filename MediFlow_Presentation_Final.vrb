@@ -1,0 +1,23 @@
+\frametitle{REST API Endpoints}
+\begin{block}{Core API Routes}
+        \begin{description}
+            \item[POST /api/simulate] Run patient flow simulation
+            \item[POST /api/optimize] Execute staff optimization
+            \item[POST /api/config/test] Test configuration feasibility
+            \item[GET /api/config] Retrieve current configuration
+            \item[PUT /api/config] Update and save configuration
+        \end{description}
+    \end{block}
+
+    \begin{lstlisting}[language=Python, basicstyle=\ttfamily\tiny]
+@app.route('/api/optimize', methods=['POST'])
+def optimize():
+    result = run_optimisation()
+    if result['status'] == 'infeasible':
+        analysis = result['analysis']
+        return jsonify({"status": "infeasible",
+                       "issues": analysis['issues'],
+                       "suggestions": analysis['suggestions']})
+    return jsonify({"status": "success",
+                   "assignments": result['assignments']})
+    \end{lstlisting}
