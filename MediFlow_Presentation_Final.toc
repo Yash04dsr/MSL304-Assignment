@@ -1,0 +1,10 @@
+\beamer@sectionintoc {1}{Problem Statement \& Methodology}{3}{0}{1}
+\beamer@sectionintoc {2}{Mathematical Formulation}{6}{0}{2}
+\beamer@sectionintoc {3}{Web Platform Architecture}{10}{0}{3}
+\beamer@sectionintoc {4}{Web Platform Features}{11}{0}{4}
+\beamer@sectionintoc {5}{Web Interface Showcase}{17}{0}{5}
+\beamer@sectionintoc {6}{Future Work \& Deployment}{19}{0}{6}
+\beamer@sectionintoc {7}{Backend Implementation}{20}{0}{7}
+\beamer@sectionintoc {8}{Key Innovations}{23}{0}{8}
+\beamer@sectionintoc {9}{Results \& Validation}{25}{0}{9}
+\beamer@sectionintoc {10}{Conclusions}{28}{0}{10}

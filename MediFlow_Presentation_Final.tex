@@ -75,9 +75,9 @@
 \end{frame}
 
 % ============================================================
-% SECTION 1: Problem Overview
+% SECTION 1: Problem Overview & Methodology
 % ============================================================
-\section{Problem Statement}
+\section{Problem Statement \& Methodology}
 
 \begin{frame}{Healthcare Staffing Challenge}
     \begin{block}{The Problem}
@@ -100,50 +100,159 @@
     \end{exampleblock}
 \end{frame}
 
-% ============================================================
-% SECTION 2: Mathematical Foundation
-% ============================================================
-\section{Mathematical Model}
+\begin{frame}{Methodology Overview}
+    \begin{block}{Dual-Module Approach}
+        \begin{enumerate}
+            \item \textbf{Patient Flow Simulation Module}
+            \begin{itemize}
+                \item Discrete event simulation using SimPy
+                \item M/M/c queueing theory for bottleneck detection
+                \item Real-time performance metrics
+            \end{itemize}
+            
+            \item \textbf{Staff Optimization Module}
+            \begin{itemize}
+                \item Integer Linear Programming using PuLP
+                \item Constraint satisfaction with CBC solver
+                \item Infeasibility analysis and suggestions
+            \end{itemize}
+        \end{enumerate}
+    \end{block}
+    
+    \begin{exampleblock}{Integration Strategy}
+        REST API backend (Flask) + Modern web frontend (Bootstrap 5) + JSON configuration
+    \end{exampleblock}
+\end{frame}
 
-\begin{frame}{Integer Linear Programming Formulation}
-    \begin{block}{Decision Variables}
-        $x_{is} \in \{0,1\}$ : Staff member $i$ works shift $s$
-    \end{block}
-    
-    \begin{block}{Objective Function}
-        \[
-        \text{Minimize: } \sum_{i \in \text{Staff}} \sum_{s \in \text{Shifts}} c_i \cdot x_{is}
-        \]
-        where $c_i$ is the cost per shift for staff member $i$
-    \end{block}
-    
-    \begin{block}{Key Constraints}
+\begin{frame}{Key Assumptions}
+    \begin{alertblock}{Optimization Module}
         \begin{itemize}
-            \item Shift requirements: $\sum_{i} x_{is} \geq R_s$ for each shift $s$
-            \item Max hours: $\sum_{s} x_{is} \leq H_i$ for each staff $i$
-            \item Availability: $x_{is} = 0$ if staff $i$ unavailable for shift $s$
+            \item \textbf{Binary shifts}: Complete shift or none (no partials)
+            \item \textbf{Uniform duration}: 8 hours per shift (AM/PM)
+            \item \textbf{Fixed costs}: Constant cost per shift
+            \item \textbf{Weekly horizon}: 5-day schedule (Mon-Fri)
+            \item \textbf{Static availability}: Known in advance
+        \end{itemize}
+    \end{alertblock}
+    
+    \begin{block}{Simulation Module}
+        \begin{itemize}
+            \item \textbf{Markovian arrivals}: Poisson process ($\lambda$)
+            \item \textbf{Exponential service}: Mean rate $\mu$
+            \item \textbf{Homogeneous servers}: Identical service rates
+            \item \textbf{FCFS discipline}: First-come, first-served
+            \item \textbf{Infinite capacity}: No rejections
         \end{itemize}
     \end{block}
 \end{frame}
 
-\begin{frame}{Queue Theory Integration}
-    \begin{block}{M/M/c Queue Model}
+% ============================================================
+% SECTION 2: Mathematical Foundation
+% ============================================================
+\section{Mathematical Formulation}
+
+\begin{frame}{Integer Linear Programming Model}
+    \begin{block}{Sets \& Indices}
+        $I$ : Staff members ($i \in I$) \quad | \quad $S$ : Shifts ($s \in S$)
+    \end{block}
+    
+    \begin{block}{Parameters}
         \begin{itemize}
-            \item $\lambda$ : Patient arrival rate (patients/hour)
-            \item $\mu$ : Service rate per staff (patients/hour)
-            \item $c$ : Number of servers (staff members)
+            \item $c_i$ : Cost per shift for staff $i$
+            \item $R_s$ : Minimum required staff for shift $s$
+            \item $H_i$ : Maximum weekly hours for staff $i$
+            \item $A_{is}$ : Availability (1 if available, 0 otherwise)
+            \item $h$ : Hours per shift (8 hours)
+        \end{itemize}
+    \end{block}
+    
+    \begin{block}{Decision Variables}
+        \[
+        x_{is} \in \{0,1\} \quad \forall i \in I, s \in S
+        \]
+        $x_{is} = 1$ if staff $i$ assigned to shift $s$
+    \end{block}
+\end{frame}
+
+\begin{frame}{Optimization Model: Objective \& Constraints}
+    \begin{block}{Objective Function}
+        \[
+        \text{Minimize: } Z = \sum_{i \in I} \sum_{s \in S} c_i \cdot x_{is}
+        \]
+        Minimize total staffing cost across all shifts
+    \end{block}
+    
+    \begin{block}{Constraints}
+        \begin{enumerate}
+            \item \textbf{Shift Coverage:}
+            \[
+            \sum_{i \in I} x_{is} \geq R_s \quad \forall s \in S
+            \]
+            
+            \item \textbf{Maximum Hours:}
+            \[
+            \sum_{s \in S} h \cdot x_{is} \leq H_i \quad \forall i \in I
+            \]
+            
+            \item \textbf{Availability:}
+            \[
+            x_{is} \leq A_{is} \quad \forall i \in I, s \in S
+            \]
+            
+            \item \textbf{Binary:}
+            \[
+            x_{is} \in \{0,1\} \quad \forall i \in I, s \in S
+            \]
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Queue Theory: M/M/c Model}
+    \begin{block}{System Parameters}
+        \begin{itemize}
+            \item $\lambda$ : Arrival rate (Poisson)
+            \item $\mu$ : Service rate per server (Exponential)
+            \item $c$ : Number of servers
             \item $\rho = \frac{\lambda}{\mu \cdot c}$ : Traffic intensity
         \end{itemize}
     \end{block}
     
-    \begin{alertblock}{Bottleneck Detection Criteria}
-        \begin{itemize}
-            \item \textcolor{red}{Critical}: $\rho \geq 0.95$ (System overload)
-            \item \textcolor{orange}{Warning}: $0.85 \leq \rho < 0.95$ (High congestion)
-            \item \textcolor{yellow}{Caution}: $0.75 \leq \rho < 0.85$ (Moderate load)
-            \item \textcolor{green}{Healthy}: $\rho < 0.75$ (Normal operation)
-        \end{itemize}
+    \begin{alertblock}{Stability Condition}
+        $\rho = \frac{\lambda}{\mu \cdot c} < 1$ \quad (System stable when $\rho < 1$)
     \end{alertblock}
+    
+    \begin{block}{Performance Metrics}
+        \begin{itemize}
+            \item \textbf{Little's Law}: $L = \lambda \cdot W$
+            \item $L_q$ : Average queue length
+            \item $W_q$ : Average wait time
+            \item $\rho$ : System utilization
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Bottleneck Detection Logic}
+    \begin{block}{Traffic Intensity Classification}
+        Based on $\rho = \frac{\lambda}{\mu \cdot c}$
+    \end{block}
+    
+    \begin{alertblock}{Four-Level System}
+        \begin{description}
+            \item[\textcolor{red}{Critical}] $\rho \geq 0.95$ - System overload, immediate action
+            
+            \item[\textcolor{orange}{Warning}] $0.85 \leq \rho < 0.95$ - High congestion, add staff soon
+            
+            \item[\textcolor{yellow}{Caution}] $0.75 \leq \rho < 0.85$ - Moderate load, monitor
+            
+            \item[\textcolor{green}{Healthy}] $\rho < 0.75$ - Normal operation
+        \end{description}
+    \end{alertblock}
+    
+    \vspace{0.3cm}
+    
+    \begin{exampleblock}{Implementation}
+        Queue length grows unbounded when critical | Wait times exceed limits
+    \end{exampleblock}
 \end{frame}
 
 % ============================================================
@@ -395,28 +504,27 @@ config.staff[name].availability = availability;
 \end{frame}
 
 \begin{frame}{Web UI Demo: Staff Rota Optimizer}
-    \begin{block}{Checkbox-Based Configuration Interface}
-        \textbf{Design}: Card-based layout with one card per staff member
+    \begin{block}{Checkbox-Based Interface}
+        Card layout with one card per staff member
     \end{block}
     
-    \begin{exampleblock}{Staff Configuration Card Features}
+    \begin{exampleblock}{Card Features}
         \begin{itemize}
-            \item \textbf{Staff Name Header}: Color-coded by role (Nurse/Technician)
-            \item \textbf{10 Shift Checkboxes}: Mon\_AM, Mon\_PM, Tue\_AM, ..., Fri\_PM
-            \item \textbf{Quick Actions}: "Select All Shifts" and "Clear All Shifts" buttons
-            \item \textbf{Cost Input}: Cost per shift (numeric field with \$ prefix)
-            \item \textbf{Max Hours Input}: Weekly hour limit (numeric field)
-            \item \textbf{Add/Remove Buttons}: Dynamically manage staff members
+            \item Color-coded header (Nurse/Technician)
+            \item 10 shift checkboxes (Mon\_AM - Fri\_PM)
+            \item Quick actions: Select All / Clear All
+            \item Cost per shift \& max hours inputs
+            \item Add/Remove staff buttons
         \end{itemize}
     \end{exampleblock}
     
-    \begin{alertblock}{Optimization Results}
-        \textbf{Success}: Green cards showing staff-shift assignments + total cost\\
-        \textbf{Failure}: Red alert with specific issues + Yellow suggestions card with actionable fixes
+    \begin{alertblock}{Results Display}
+        \textbf{Success}: Green cards with assignments + total cost\\
+        \textbf{Failure}: Red alert (issues) + Yellow card (suggestions)
     \end{alertblock}
     
     \begin{block}{Real-Time Testing}
-        "Test Configuration" button validates feasibility without saving changes
+        Test button validates without saving
     \end{block}
 \end{frame}
 
@@ -425,42 +533,37 @@ config.staff[name].availability = availability;
 % ============================================================
 \section{Future Work \& Deployment}
 
-\begin{frame}{Future Enhancements \& Production Deployment}
-    \begin{alertblock}{Priority: Deploy to Production Server}
-        \textbf{Current}: Local Flask development server (localhost:5001)\\
-        \textbf{Target}: Public cloud deployment with production WSGI server
+\begin{frame}{Future Work \& Deployment}
+    \begin{alertblock}{Production Deployment}
+        \textbf{Current}: Local server (localhost:5001) \quad \textbf{Target}: Cloud deployment
     \end{alertblock}
     
     \begin{block}{Deployment Options}
-        \begin{description}
-            \item[AWS/Azure/GCP] EC2/VM with Gunicorn + Nginx + SSL (Let's Encrypt)
-            \item[Heroku/Render] Quick Git-based deployment with auto-scaling
-            \item[Docker + K8s] Containerized deployment with orchestration
-        \end{description}
+        \textbf{AWS/Azure/GCP}: Gunicorn + Nginx + SSL \quad | \quad \textbf{Heroku/Render}: Quick deploy \quad | \quad \textbf{Docker+K8s}: Containers
     \end{block}
     
     \begin{columns}[T]
         \begin{column}{0.48\textwidth}
             \begin{exampleblock}{Model Improvements}
                 \begin{itemize}
-                    \item Stochastic optimization (handle uncertainty)
-                    \item Multi-objective optimization (cost + fairness)
-                    \item Time-varying arrival rates
-                    \item Staff skill-based assignment
-                    \item Multi-week planning horizon
+                    \item Stochastic optimization
+                    \item Multi-objective (cost+fairness)
+                    \item Time-varying arrivals
+                    \item Skill-based assignment
+                    \item Multi-week planning
                 \end{itemize}
             \end{exampleblock}
         \end{column}
         
         \begin{column}{0.48\textwidth}
-            \begin{exampleblock}{Platform Enhancements}
+            \begin{exampleblock}{Platform Features}
                 \begin{itemize}
-                    \item PostgreSQL/MySQL backend
-                    \item JWT authentication system
-                    \item Mobile app (iOS/Android)
-                    \item ML demand forecasting
-                    \item Email/SMS notifications
-                    \item Export to PDF/Excel
+                    \item Database backend
+                    \item JWT authentication
+                    \item Mobile apps
+                    \item ML forecasting
+                    \item Notifications
+                    \item PDF/Excel export
                 \end{itemize}
             \end{exampleblock}
         \end{column}
