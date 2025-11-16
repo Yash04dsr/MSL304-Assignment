@@ -16,7 +16,7 @@
       },
       "Nurse_B": {
         "cost": 25,
-        "max_hours": 50,
+        "max_hours": 40,
         "availability": [
           "Mon_AM",
           "Mon_PM",
