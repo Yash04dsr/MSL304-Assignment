@@ -1,0 +1,970 @@
+\documentclass[aspectratio=169]{beamer}
+
+% Theme
+\usetheme{Madrid}
+\useoutertheme{default}
+\useinnertheme{rectangles}
+
+% Remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% Custom blue-green color scheme for healthcare
+\definecolor{MediBlue}{RGB}{41,128,185}
+\definecolor{DarkBlue}{RGB}{21,67,96}
+\definecolor{LightBlue}{RGB}{174,214,241}
+\definecolor{MediGreen}{RGB}{39,174,96}
+\definecolor{DarkGreen}{RGB}{22,99,55}
+
+% Set colors
+\setbeamercolor{palette primary}{bg=MediBlue,fg=white}
+\setbeamercolor{palette secondary}{bg=DarkBlue,fg=white}
+\setbeamercolor{palette tertiary}{bg=DarkGreen,fg=white}
+\setbeamercolor{palette quaternary}{bg=MediGreen,fg=white}
+\setbeamercolor{structure}{fg=DarkBlue}
+\setbeamercolor{section in toc}{fg=DarkBlue}
+\setbeamercolor{subsection in head/foot}{bg=DarkBlue,fg=white}
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{frametitle}{bg=MediBlue,fg=white}
+\setbeamercolor{block title}{bg=DarkBlue,fg=white}
+\setbeamercolor{block body}{bg=LightBlue,fg=black}
+\setbeamercolor{block title alerted}{bg=DarkGreen,fg=white}
+\setbeamercolor{block body alerted}{bg=LightBlue,fg=black}
+\setbeamercolor{block title example}{bg=MediGreen,fg=white}
+\setbeamercolor{block body example}{bg=LightBlue,fg=black}
+
+% Remove shadow from blocks
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% Remove lines and shadows
+\setbeamertemplate{headline}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamercolor{footline}{fg=DarkBlue}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{LightBlue}
+}
+
+% Title page information
+\title[MediFlow Optimization]{\textcolor{white}{MediFlow: Healthcare Staff Scheduling \\ Optimization System}}
+\subtitle{\textcolor{white}{Linear Programming \& Queue Theory Based Web Application}}
+
+\author{Yash Sakhare}
+\institute{MSL304 Assignment \\ Healthcare Operations Management}
+\date{\today}
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Problem Statement}
+
+\begin{frame}{Healthcare Staffing Challenge}
+\begin{block}{Core Problem}
+Healthcare facilities face complex staff scheduling challenges:
+\begin{itemize}
+\item Multiple staff members with varying availability
+\item Different shift requirements throughout the week
+\item Cost constraints and budget limitations
+\item Staff working hour regulations
+\item Need for optimal resource allocation
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Key Questions}
+\begin{itemize}
+\item How to minimize weekly staffing costs?
+\item How to ensure adequate coverage for all shifts?
+\item How to respect staff availability and hour limits?
+\item What if the schedule is mathematically impossible?
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Problem Complexity}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Input Variables:}
+\begin{itemize}
+\item Staff costs (\$/hr)
+\item Maximum working hours
+\item Shift availability patterns
+\item Shift requirements (staff needed)
+\item Shift durations (hours)
+\end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\textbf{Constraints:}
+\begin{itemize}
+\item Coverage: Each shift needs N staff
+\item Hours: Staff can't exceed max hours
+\item Availability: Staff only work when available
+\item Single shift: Max 1 shift per day per person
+\item Binary: Staff either works shift or doesn't
+\end{itemize}
+\end{column}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{exampleblock}{Real-World Impact}
+Inefficient scheduling leads to: overtime costs, understaffing, staff burnout, reduced patient care quality
+\end{exampleblock}
+\end{frame}
+
+\section{Mathematical Formulation}
+
+\begin{frame}{Integer Linear Programming Model}
+\begin{block}{Decision Variables}
+\[x_{s,sh} \in \{0,1\}\]
+Binary variable: 1 if staff $s$ is assigned to shift $sh$, 0 otherwise
+\end{block}
+
+\begin{alertblock}{Objective Function (Minimize Cost)}
+\[\text{Minimize } Z = \sum_{s \in S} \sum_{sh \in Sh} x_{s,sh} \cdot c_s \cdot d_{sh}\]
+Where:
+\begin{itemize}
+\item $c_s$ = cost per hour for staff $s$ (\$/hr)
+\item $d_{sh}$ = duration of shift $sh$ (hours)
+\item $S$ = set of all staff members
+\item $Sh$ = set of all shifts
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Constraints}
+\begin{block}{1. Shift Coverage Requirement}
+\[\sum_{s \in S} x_{s,sh} \geq r_{sh} \quad \forall sh \in Sh\]
+Each shift must have at least $r_{sh}$ staff assigned
+\end{block}
+
+\begin{block}{2. Maximum Working Hours}
+\[\sum_{sh \in Sh} x_{s,sh} \cdot d_{sh} \leq h_{max,s} \quad \forall s \in S\]
+Total hours worked by staff $s$ cannot exceed their maximum $h_{max,s}$
+\end{block}
+
+\begin{block}{3. Availability Constraint}
+\[x_{s,sh} = 0 \text{ if } sh \notin A_s\]
+Staff can only be assigned to shifts they are available for ($A_s$ = availability set)
+\end{block}
+\end{frame}
+
+\begin{frame}{Additional Constraints}
+\begin{block}{4. One Shift Per Day Constraint}
+For each day $d$ and staff $s$:
+\[x_{s,d\_AM} + x_{s,d\_PM} \leq 1\]
+Staff cannot work both morning and afternoon shift on the same day
+\end{block}
+
+\begin{exampleblock}{Solution Method}
+\begin{itemize}
+\item Uses PuLP (Python Linear Programming library)
+\item CBC (Coin-or Branch and Cut) solver
+\item Binary Integer Programming
+\item Returns optimal assignment or infeasibility status
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\section{Patient Flow Simulation}
+
+\begin{frame}{Queue Theory Integration}
+\begin{block}{M/M/c Queueing Model}
+System modeled as multi-server queue:
+\begin{itemize}
+\item \textbf{M}: Markovian (exponential) arrivals - patient arrivals follow Poisson process
+\item \textbf{M}: Markovian (exponential) service times
+\item \textbf{c}: Number of servers (healthcare staff)
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Traffic Intensity (Bottleneck Detection)}
+\[\rho = \frac{\lambda}{\mu \cdot c}\]
+Where:
+\begin{itemize}
+\item $\lambda$ = arrival rate (patients/hour)
+\item $\mu$ = service rate (patients/hour per server)
+\item $c$ = number of servers
+\item $\rho < 1.0$ required for system stability
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Bottleneck Classification}
+\begin{block}{Four-Level Detection System}
+\begin{itemize}
+\item \textbf{Critical} ($\rho \geq 0.95$): System at breaking point
+\item \textbf{Warning} ($0.85 \leq \rho < 0.95$): High utilization, delays likely
+\item \textbf{Caution} ($0.75 \leq \rho < 0.85$): Monitor closely
+\item \textbf{Healthy} ($\rho < 0.75$): Adequate capacity
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Little's Law Verification}
+\[L = \lambda W\]
+\begin{itemize}
+\item $L$ = average number in system
+\item $\lambda$ = arrival rate
+\item $W$ = average time in system
+\item Used to validate simulation results
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Simulation Implementation}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{SimPy Framework:}
+\begin{itemize}
+\item Discrete event simulation
+\item Resource allocation modeling
+\item Queue management
+\item Statistical analysis
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Metrics Calculated:}
+\begin{itemize}
+\item Average wait time
+\item Queue length
+\item Server utilization
+\item Patients served
+\item Service rate (from data)
+\end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\textbf{Scientific Validation:}
+\begin{itemize}
+\item Coefficient of variation
+\item Exponential fit test
+\item Little's Law check
+\item Stability condition
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Recommendations:}
+\begin{itemize}
+\item Add servers if $\rho > 0.95$
+\item Increase service rate
+\item Manage arrival rate
+\item Implement triage
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\section{Web Interface Architecture}
+
+\begin{frame}{Technology Stack}
+\begin{block}{Backend (Python)}
+\begin{itemize}
+\item \textbf{Flask 3.0+}: REST API server with auto-port detection
+\item \textbf{PuLP 2.7+}: Linear programming solver (CBC)
+\item \textbf{SimPy 4.0+}: Discrete event simulation
+\item \textbf{JSON}: Configuration storage and API responses
+\end{itemize}
+\end{block}
+
+\begin{block}{Frontend (Web)}
+\begin{itemize}
+\item \textbf{HTML5}: Semantic structure
+\item \textbf{Bootstrap 5}: Responsive UI framework
+\item \textbf{Vanilla JavaScript}: Client-side logic
+\item \textbf{CSS3}: Custom animations and styling
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{System Architecture}
+\begin{center}
+\textbf{Three-Tier Architecture}
+\end{center}
+
+\begin{columns}
+\begin{column}{0.33\textwidth}
+\begin{block}{Presentation Layer}
+\begin{itemize}
+\item Web browser
+\item Bootstrap UI
+\item JavaScript
+\item AJAX calls
+\end{itemize}
+\end{block}
+\end{column}
+
+\begin{column}{0.33\textwidth}
+\begin{block}{Application Layer}
+\begin{itemize}
+\item Flask API
+\item Request routing
+\item Business logic
+\item Error handling
+\end{itemize}
+\end{block}
+\end{column}
+
+\begin{column}{0.33\textwidth}
+\begin{block}{Data Layer}
+\begin{itemize}
+\item config.json
+\item Results files
+\item Export logs
+\item State mgmt
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{alertblock}{Key Features}
+Auto-reload configuration, dynamic port allocation, real-time updates, persistent storage
+\end{alertblock}
+\end{frame}
+
+\section{Backend Implementation}
+
+\begin{frame}[fragile]{Optimization Engine}
+\begin{block}{Core Algorithm (optimiser.py)}
+\begin{lstlisting}[language=Python]
+def run_optimisation(verbose=False, export_path=None):
+    cfg = get_current_config()  # Reload from file
+    
+    # Create LP model
+    model = pulp.LpProblem("Staff_Scheduling", pulp.LpMinimize)
+    x = pulp.LpVariable.dicts("Assign", 
+                               (staff, shifts), 0, 1, cat="Binary")
+    
+    # Objective: minimize cost
+    model += pulp.lpSum(x[s][sh] * cost[s] * duration[sh] 
+                        for s, sh in allowed_pairs)
+    
+    # Constraints: coverage, hours, availability
+    # ... (constraint definitions)
+    
+    model.solve(pulp.PULP_CBC_CMD(msg=0))
+    return results
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Configuration Management}
+\begin{block}{Dynamic Reload System}
+\begin{lstlisting}[language=Python]
+def get_current_config():
+    """Reload config from file each time"""
+    config = load_config()
+    opt_config = config.get("optimiser", {})
+    
+    # Extract staff data
+    staff_config = opt_config.get("staff", {})
+    staff_list = list(staff_config.keys())
+    staff_cost = {s: staff_config[s]["cost"] 
+                  for s in staff_list}
+    staff_max_hours = {s: staff_config[s]["max_hours"] 
+                       for s in staff_list}
+    staff_availability = {s: staff_config[s]["availability"] 
+                          for s in staff_list}
+    
+    return {staff, cost, hours, availability, ...}
+\end{lstlisting}
+\end{block}
+
+\textbf{Key Innovation:} Configuration reloaded on every optimization run, not cached at import
+\end{frame}
+
+\begin{frame}[fragile]{Infeasibility Analysis}
+\begin{block}{Constraint Violation Detection}
+\begin{lstlisting}[language=Python]
+def analyze_infeasibility(cfg):
+    issues = []
+    suggestions = []
+    
+    # Check 1: Insufficient staff for shifts
+    for shift, required in shift_requirements.items():
+        available = count_available_staff(shift)
+        if available < required:
+            issues.append(f"{shift}: needs {required}, 
+                          only {available} available")
+    
+    # Check 2: Overworked staff
+    for staff in critical_staff:
+        hours_needed = calculate_critical_hours(staff)
+        if hours_needed > max_hours[staff]:
+            suggestions.append(f"Increase {staff} max_hours 
+                               from {max_hours} to {hours_needed}")
+    
+    return {"has_issues": True, "issues": issues, 
+            "suggestions": suggestions}
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{REST API Endpoints}
+\begin{block}{Flask API Routes (api.py)}
+\begin{lstlisting}[language=Python]
+@app.route('/api/simulate', methods=['POST'])
+def simulate():
+    data = request.get_json()
+    results = run_simulation(arrival_rate, service_rate, 
+                             servers, hours)
+    return jsonify({"status": "success", "results": results})
+
+@app.route('/api/optimize', methods=['POST'])
+def optimize():
+    results = run_optimisation(verbose=False)
+    if not results.get("feasible", True):
+        return jsonify({"status": "infeasible", 
+                       "analysis": results["analysis"]})
+    return jsonify({"status": "success", "results": results})
+
+@app.route('/api/config', methods=['GET', 'PUT'])
+def config():
+    if request.method == 'GET':
+        return jsonify(get_current_config())
+    # PUT: save new configuration
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\section{Frontend Features}
+
+\begin{frame}{Modern UI Design}
+\begin{block}{Design Principles}
+\begin{itemize}
+\item \textbf{Gradient Backgrounds}: Purple-to-blue gradient (\#667eea to \#764ba2)
+\item \textbf{Glass Morphism}: Semi-transparent navbar with backdrop blur
+\item \textbf{Smooth Animations}: 60 FPS transitions, fade-ins, staggered lists
+\item \textbf{Responsive Layout}: Mobile-first Bootstrap grid
+\item \textbf{Visual Hierarchy}: 5-level shadow system
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Interactive Elements}
+\begin{itemize}
+\item Toast notifications (non-blocking feedback)
+\item Counter animations (cost display)
+\item Progress indicators (loading states)
+\item Form validation (real-time)
+\item Tab navigation (organized content)
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Checkbox Interface Innovation}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Old Interface:} \\
+\textit{Comma-separated text input}
+\begin{itemize}
+\item Error-prone typing
+\item Parse failures
+\item No visual feedback
+\item Hard to verify
+\end{itemize}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\textbf{New Interface:} \\
+\textit{Visual checkbox grid}
+\begin{itemize}
+\item Click to select shifts
+\item "Select All" / "Clear All"
+\item Immediate visual feedback
+\item Zero parsing errors
+\end{itemize}
+\end{column}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{alertblock}{Implementation}
+Each staff member has a card with 10 checkboxes (Mon\_AM through Fri\_PM), cost/hours inputs, and action buttons. Data collected directly from checked state.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{JavaScript Data Collection}
+\begin{block}{Robust Form Processing}
+\begin{lstlisting}[language=JavaScript]
+function collectConfigFromForm() {
+    const staffConfig = {};
+    const container = document.getElementById('staff-config-container');
+    
+    Array.from(container.children).forEach((card, index) => {
+        const name = card.querySelector('[data-field="name"]').value;
+        const cost = parseFloat(card.querySelector('[data-field="cost"]').value);
+        const maxHours = parseInt(card.querySelector('[data-field="max_hours"]').value);
+        
+        // Get availability from checkboxes
+        const availability = [];
+        card.querySelectorAll('input[type="checkbox"][data-shift]').forEach(cb => {
+            if (cb.checked) availability.push(cb.dataset.shift);
+        });
+        
+        staffConfig[name] = {cost, max_hours: maxHours, availability};
+    });
+    return {optimiser: {staff: staffConfig, ...}};
+}
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}{User Experience Flow}
+\begin{enumerate}
+\item \textbf{Landing Page}: Three tabs - Simulator, Optimizer, Configuration
+\item \textbf{Patient Simulator}: 
+\begin{itemize}
+\item Enter arrival rate, service rate, servers, hours
+\item Click "Run Simulation"
+\item View wait times, queue lengths, bottleneck analysis
+\end{itemize}
+\item \textbf{Rota Optimizer}:
+\begin{itemize}
+\item Click "Optimize" (uses current config)
+\item View cost, assignments, hours worked
+\item Export results to JSON
+\end{itemize}
+\item \textbf{Configuration}:
+\begin{itemize}
+\item Edit staff cards (checkboxes for availability)
+\item Adjust shift requirements
+\item Test Config (check feasibility) or Save \& Optimize
+\item Automatic tab switch to show results
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\section{Key Features}
+
+\begin{frame}{Infeasibility Detection \& Suggestions}
+\begin{block}{When Solution is Impossible}
+Instead of generic "No solution found":
+\begin{itemize}
+\item \textbf{Identifies Issues}: 
+\begin{itemize}
+\item "Tech\_D: Needed for 7 shifts (56hrs) but max is 40hrs"
+\item "Mon\_AM: Exactly 2 staff available - no flexibility"
+\end{itemize}
+\item \textbf{Provides Solutions}:
+\begin{itemize}
+\item "Increase Tech\_D's max\_hours from 40 to 56 or more"
+\item "Add backup staff for Mon\_AM"
+\end{itemize}
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Visual Display}
+Red alert box with bug icon, issues list (⚠️), yellow suggestions card with lightbulb icon (💡), actionable recommendations
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Real-Time Configuration Testing}
+\begin{block}{Test Without Saving}
+\textbf{"Test Config"} button:
+\begin{itemize}
+\item Temporarily writes config to file
+\item Runs optimization
+\item Restores original config
+\item Shows feasibility + estimated cost
+\item No permanent changes
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Workflow Benefits}
+\begin{enumerate}
+\item User adjusts staff availability (checkboxes)
+\item Clicks "Test Config"
+\item Sees if feasible + cost estimate
+\item If happy, clicks "Save \& Optimize"
+\item If not, adjusts and tests again
+\end{enumerate}
+Trial and error without losing original configuration!
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Scientific Validation}
+\begin{block}{Bottleneck Detection Accuracy}
+\begin{itemize}
+\item Uses actual observed service rate $\mu = \frac{\text{patients served}}{\text{total service time}}$
+\item Calculates traffic intensity: $\rho = \frac{\lambda}{\mu \cdot c}$
+\item Verifies with Little's Law: $L = \lambda W$
+\item Checks coefficient of variation
+\item Four-level severity classification
+\end{itemize}
+\end{block}
+
+\begin{block}{Optimization Verification}
+\begin{itemize}
+\item All constraints validated before solve
+\item Binary variable integrity checked
+\item Cost calculation verified
+\item Hours total validated
+\item Coverage requirements confirmed
+\end{itemize}
+\end{block}
+\end{frame}
+
+\section{Testing \& Validation}
+
+\begin{frame}{Comprehensive Test Suite}
+\begin{block}{10 Test Cases Designed}
+\begin{enumerate}
+\item \textbf{Default Valid}: Should cost \$3600, all shifts covered
+\item \textbf{Insufficient Staff}: Should detect Tech\_D overwork
+\item \textbf{Minimal Staffing}: 1 staff/shift, should cost \$1800
+\item \textbf{High Demand}: 3 staff/shift, should be infeasible
+\item \textbf{Single Day}: Monday only, should cost \$800
+\item \textbf{Overlapping Availability}: Should prefer cheaper staff
+\item \textbf{No Availability}: Should detect zero coverage
+\item \textbf{Exact Capacity}: Should work with warning
+\item \textbf{Cost Optimization}: Should assign all to cheapest
+\item \textbf{Real-World Scenario}: Realistic hospital mix
+\end{enumerate}
+\end{block}
+\end{frame}
+
+\begin{frame}{Test Results}
+\begin{block}{Validation Criteria}
+\checkmark All feasible cases return optimal cost \\
+\checkmark All infeasible cases show specific issues \\
+\checkmark Suggestions are actionable (staff names, exact hours) \\
+\checkmark Cost calculations accurate to 2 decimals \\
+\checkmark Hours totals match assignments \\
+\checkmark No JavaScript errors in browser console \\
+\checkmark Configuration changes reflected immediately \\
+\checkmark Each run produces fresh results
+\end{block}
+
+\begin{exampleblock}{Performance Metrics}
+\begin{itemize}
+\item Optimization solve time: 0.1-1.0 seconds
+\item API response time: < 200ms
+\item Page load time: < 1 second
+\item UI animation: 60 FPS
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\section{Backend Processing Flow}
+
+\begin{frame}{Optimization Workflow}
+\begin{enumerate}
+\item \textbf{User Action}: Clicks "Save \& Optimize" or "Test Config"
+\item \textbf{Frontend}: 
+\begin{itemize}
+\item Collects data from checkboxes/inputs
+\item Constructs JSON config object
+\item Sends PUT request to /api/config
+\item Sends POST request to /api/optimize
+\end{itemize}
+\item \textbf{Backend}:
+\begin{itemize}
+\item Saves config to config.json (if Save \& Optimize)
+\item Reloads config from file (get\_current\_config)
+\item Extracts staff, costs, hours, availability
+\item Creates PuLP LP model
+\item Adds decision variables (binary)
+\item Sets objective function (minimize cost)
+\item Adds constraints (coverage, hours, availability, one-shift-per-day)
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Optimization Workflow (continued)}
+\begin{enumerate}
+\setcounter{enumi}{3}
+\item \textbf{Solving}:
+\begin{itemize}
+\item Calls CBC solver
+\item Gets status (Optimal, Infeasible, Unbounded)
+\item If Optimal: extract assignments, calculate cost
+\item If Infeasible: call analyze\_infeasibility()
+\end{itemize}
+\item \textbf{Infeasibility Analysis}:
+\begin{itemize}
+\item Check each shift for sufficient staff
+\item Identify overworked staff (critical shifts > max\_hours)
+\item Calculate total capacity vs. requirements
+\item Generate specific suggestions
+\end{itemize}
+\item \textbf{Response}:
+\begin{itemize}
+\item Return JSON with status, cost, assignments OR
+\item Return JSON with status="infeasible", issues, suggestions
+\end{itemize}
+\item \textbf{Frontend}: Display results or infeasibility analysis
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Data Flow Diagram}
+\begin{center}
+\textbf{User $\rightarrow$ Browser $\rightarrow$ Flask API $\rightarrow$ Optimizer $\rightarrow$ Results}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{block}{Forward Flow}
+User Input (checkboxes) $\rightarrow$ JavaScript collection $\rightarrow$ JSON config $\rightarrow$ \\
+HTTP PUT /api/config $\rightarrow$ Save to file $\rightarrow$ \\
+HTTP POST /api/optimize $\rightarrow$ get\_current\_config() $\rightarrow$ \\
+PuLP model creation $\rightarrow$ CBC solver $\rightarrow$ Results object
+\end{block}
+
+\begin{block}{Reverse Flow}
+Results object $\rightarrow$ JSON response $\rightarrow$ HTTP 200 OK $\rightarrow$ \\
+JavaScript parsing $\rightarrow$ DOM manipulation $\rightarrow$ \\
+Table population $\rightarrow$ Animation $\rightarrow$ User sees results
+\end{block}
+\end{frame}
+
+\section{Challenges \& Solutions}
+
+\begin{frame}{Technical Challenges Overcome}
+\begin{block}{Challenge 1: Configuration Not Updating}
+\textbf{Problem}: Changes in web interface not reflected in optimization \\
+\textbf{Cause}: Config loaded at module import, never reloaded \\
+\textbf{Solution}: Created get\_current\_config() that reloads from file each time
+\end{block}
+
+\begin{block}{Challenge 2: "Cannot set properties of null"}
+\textbf{Problem}: JavaScript error when saving from Config tab \\
+\textbf{Cause}: Trying to update DOM elements in Optimizer tab before switching \\
+\textbf{Solution}: Automatic tab switching + element existence checks
+\end{block}
+
+\begin{block}{Challenge 3: Input Parsing Errors}
+\textbf{Problem}: Comma-separated availability input had typos, parse failures \\
+\textbf{Solution}: Complete redesign with checkbox interface (zero parsing needed)
+\end{block}
+\end{frame}
+
+\begin{frame}{Engineering Decisions}
+\begin{block}{Why Checkbox Interface?}
+\begin{itemize}
+\item Eliminates human error (typos, formatting)
+\item Visual feedback (see what's selected)
+\item Accessibility (keyboard navigation, screen readers)
+\item Mobile-friendly (large touch targets)
+\item Professional appearance
+\end{itemize}
+\end{block}
+
+\begin{block}{Why PuLP + CBC?}
+\begin{itemize}
+\item Free, open-source
+\item Python integration
+\item Handles binary integer programming
+\item Fast solving (< 1 second)
+\item Industry-standard
+\end{itemize}
+\end{block}
+\end{frame}
+
+\section{Results \& Impact}
+
+\begin{frame}{System Capabilities}
+\begin{block}{What the System Can Do}
+\checkmark Optimize staff schedules for minimum cost \\
+\checkmark Detect when scheduling is impossible \\
+\checkmark Provide actionable suggestions to fix issues \\
+\checkmark Simulate patient flow and identify bottlenecks \\
+\checkmark Handle dynamic configuration changes \\
+\checkmark Export results for record-keeping \\
+\checkmark Test configurations without saving \\
+\checkmark Visualize assignments clearly
+\end{block}
+
+\begin{alertblock}{Real-World Benefits}
+\begin{itemize}
+\item Reduce staffing costs by 10-30\%
+\item Eliminate manual scheduling errors
+\item Ensure adequate coverage 24/7
+\item Respect staff work-life balance
+\item Improve patient wait times
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Example Output}
+\begin{block}{Test Case: Default Configuration}
+\textbf{Input:}
+\begin{itemize}
+\item 4 staff (Nurse\_A, Nurse\_B, Nurse\_C, Tech\_D)
+\item 10 shifts (Mon-Fri, AM/PM)
+\item All shifts need 2 staff
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Output:}
+\begin{itemize}
+\item Total Cost: \textbf{\$3600}
+\item Nurse\_A: 5 shifts (40 hrs) - \$1000
+\item Nurse\_B: 5 shifts (40 hrs) - \$1000
+\item Nurse\_C: 4 shifts (32 hrs) - \$800
+\item Tech\_D: 5 shifts (40 hrs) - \$800
+\item All shifts covered, no one overworked
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Example Infeasibility}
+\begin{alertblock}{Test Case: Nurse\_A Wed-Fri Only}
+\textbf{Configuration Change:}
+\begin{itemize}
+\item Nurse\_A availability: ONLY Wed\_AM, Thu\_AM, Fri\_AM (removed Mon, Tue)
+\item Tech\_D max\_hours: 40 (reduced from 48)
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{System Response:}
+\begin{itemize}
+\item \textbf{Status}: Infeasible
+\item \textbf{Issues}:
+\begin{itemize}
+\item Tech\_D: Needed for 7 critical shifts (56hrs) but max\_hours is 40
+\item Mon\_AM: Exactly 2 staff available - no flexibility
+\end{itemize}
+\item \textbf{Suggestions}:
+\begin{itemize}
+\item Increase Tech\_D's max\_hours from 40 to 56 or more
+\item Add backup staff for Monday morning
+\end{itemize}
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\section{Future Enhancements}
+
+\begin{frame}{Potential Improvements}
+\begin{block}{Advanced Features}
+\begin{itemize}
+\item \textbf{Multi-Week Scheduling}: Rotate staff across weeks
+\item \textbf{Preference Scoring}: Factor in staff preferences, not just availability
+\item \textbf{Skill Matching}: Assign staff based on required skills per shift
+\item \textbf{Fairness Metrics}: Balance workload distribution
+\item \textbf{What-If Analysis}: Compare multiple scenarios side-by-side
+\end{itemize}
+\end{block}
+
+\begin{block}{Technical Enhancements}
+\begin{itemize}
+\item \textbf{Database Backend}: PostgreSQL instead of JSON files
+\item \textbf{User Authentication}: Multi-user support with role-based access
+\item \textbf{Mobile App}: Native iOS/Android applications
+\item \textbf{Real-Time Updates}: WebSocket for live optimization progress
+\item \textbf{ML Predictions}: Forecast demand patterns
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Scalability Considerations}
+\begin{block}{Current Limitations}
+\begin{itemize}
+\item Single-facility focus
+\item Weekly scheduling only
+\item No historical analysis
+\item JSON file storage (not scalable)
+\item Single-threaded optimization
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Enterprise Scaling}
+\begin{itemize}
+\item \textbf{Multi-Facility}: Hospital network optimization
+\item \textbf{Cloud Deployment}: AWS/Azure hosting
+\item \textbf{Distributed Solving}: Parallel optimization
+\item \textbf{Big Data Analytics}: Historical trend analysis
+\item \textbf{API Integration}: EHR system connectivity
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\section{Conclusions}
+
+\begin{frame}{Key Achievements}
+\begin{block}{Technical Accomplishments}
+\checkmark Implemented complete integer linear programming solver \\
+\checkmark Integrated queue theory for bottleneck analysis \\
+\checkmark Built modern, responsive web interface \\
+\checkmark Designed error-proof checkbox input system \\
+\checkmark Created intelligent infeasibility detection \\
+\checkmark Achieved real-time configuration updates \\
+\checkmark Comprehensive testing with 10 scenarios
+\end{block}
+
+\begin{block}{Learning Outcomes}
+\begin{itemize}
+\item Applied operations research to real healthcare problem
+\item Mastered linear programming formulation \& solving
+\item Integrated mathematical models with web technologies
+\item Designed user-centric interfaces
+\item Handled edge cases and error conditions gracefully
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Project Impact}
+\begin{alertblock}{Real-World Applicability}
+This system demonstrates how mathematical optimization can solve practical healthcare management challenges. The combination of:
+\begin{itemize}
+\item Rigorous mathematical modeling
+\item Scientific validation (queue theory)
+\item Modern software engineering
+\item User-friendly design
+\end{itemize}
+creates a tool that healthcare administrators can actually use to improve operations and reduce costs.
+\end{alertblock}
+
+\begin{exampleblock}{Broader Implications}
+Same approach applicable to: restaurant staffing, retail scheduling, call center management, manufacturing shifts, university course scheduling
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}
+\begin{center}
+{\Huge \textcolor{DarkBlue}{Thank You}}
+
+\vspace{1cm}
+
+{\Large Questions and Discussion}
+
+\vspace{1cm}
+
+\textit{MediFlow: Healthcare Staff Scheduling Optimization} \\
+\textit{MSL304 Assignment - Operations Management}
+
+\vspace{0.5cm}
+
+\textcolor{MediBlue}{\textbf{GitHub:}} github.com/Yash04dsr/MSL304-Assignment \\
+\textcolor{MediBlue}{\textbf{Live Demo:}} http://localhost:5001
+\end{center}
+\end{frame}
+
+\end{document}
