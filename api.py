@@ -263,19 +263,44 @@ def update_config():
 
 
 if __name__ == '__main__':
-    print("""
-    ╔═══════════════════════════════════════════╗
-    ║       MediFlow API Server Started         ║
-    ╠═══════════════════════════════════════════╣
-    ║  Access the API at:                       ║
-    ║  http://localhost:5000                    ║
-    ║                                           ║
-    ║  Endpoints:                               ║
-    ║  • POST /api/simulate                     ║
-    ║  • POST /api/optimize                     ║
-    ║  • GET  /api/results                      ║
-    ║  • GET  /api/config                       ║
-    ╚═══════════════════════════════════════════╝
+    import socket
+    
+    # Find available port
+    def find_free_port(start_port=5000, max_port=5010):
+        """Find an available port starting from start_port."""
+        for port in range(start_port, max_port):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.bind(('', port))
+                    return port
+            except OSError:
+                continue
+        return None
+    
+    port = find_free_port()
+    
+    if port is None:
+        print("\n❌ Error: Could not find an available port between 5000-5009")
+        print("Please free up a port or disable AirPlay Receiver:")
+        print("  System Settings → General → AirDrop & Handoff → AirPlay Receiver → Off")
+        exit(1)
+    
+    print(f"""
+╔═══════════════════════════════════════════╗
+║       MediFlow API Server Started         ║
+╠═══════════════════════════════════════════╣
+║  Access at: http://localhost:{port:<4}          ║
+║                                           ║
+║  Endpoints:                               ║
+║  • POST /api/simulate                     ║
+║  • POST /api/optimize                     ║
+║  • GET  /api/results                      ║
+║  • GET  /api/config                       ║
+╚═══════════════════════════════════════════╝
     """)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    if port != 5000:
+        print(f"⚠️  Note: Using port {port} (5000 was in use)")
+        print(f"    Update API_BASE in web/static/js/app.js if needed\n")
+    
+    app.run(debug=True, host='0.0.0.0', port=port)

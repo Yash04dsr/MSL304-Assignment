@@ -62,13 +62,14 @@ You'll see:
 ╔═══════════════════════════════════════════╗
 ║       MediFlow API Server Started         ║
 ╠═══════════════════════════════════════════╣
-║  Access the API at:                       ║
-║  http://localhost:5000                    ║
+║  Access at: http://localhost:5000          ║
 ╚═══════════════════════════════════════════╝
 ```
 
+**Note:** If port 5000 is in use (e.g., by AirPlay Receiver on macOS), the server will automatically find and use the next available port (5001, 5002, etc.).
+
 ### Open in Browser
-Visit: **http://localhost:5000**
+Visit the URL shown in the terminal (usually **http://localhost:5000**).
 
 The web interface provides:
 - 📊 Interactive forms for simulation
@@ -289,10 +290,21 @@ chmod 755 logs results
 ```
 
 ### Error: Port 5000 already in use
+The server now automatically finds an available port. If you see this error, it means ports 5000-5009 are all in use.
+
+**Solution 1:** Disable AirPlay Receiver (macOS):
+- System Settings → General → AirDrop & Handoff → AirPlay Receiver → Off
+
+**Solution 2:** Kill the process using the port:
 ```bash
-# Use different port
-python api.py  # Edit line: app.run(port=5001)
+# Find what's using port 5000
+lsof -ti:5000
+
+# Kill it (if safe to do so)
+kill -9 $(lsof -ti:5000)
 ```
+
+**Solution 3:** The server will automatically use the next available port (5001, 5002, etc.)
 
 ### Web interface not loading
 1. Check server is running: `python api.py`
