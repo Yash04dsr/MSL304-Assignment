@@ -46,8 +46,8 @@
 
 \title{MediFlow: Healthcare Staff Optimization}
 \subtitle{Web-Based Intelligent Scheduling Platform}
-\author{Yash Sakhare}
-\institute{MSL304 Assignment}
+\author{Abhikrit Bhardwaj (2022ME21333) \\ Sakhare Yash Balram (2022CH71496)}
+\institute{MSL304 -- Operations Management}
 \date{\today}
 
 \begin{document}
@@ -335,6 +335,125 @@ config.staff[name].availability = availability;
 \end{frame}
 
 % ============================================================
+% SECTION: Web UI Showcase
+% ============================================================
+\section{Web Interface Showcase}
+
+\begin{frame}{Web UI Demo: Patient Flow Simulator}
+    \begin{block}{Interactive Simulation Interface}
+        \textbf{Navigation}: Three-tab system with Simulator as first tab
+    \end{block}
+    
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \begin{exampleblock}{Input Section}
+                \begin{itemize}
+                    \item Arrival rate ($\lambda$) slider
+                    \item Service rate ($\mu$) input
+                    \item Number of staff (servers)
+                    \item Simulation duration
+                    \item Large "Run Simulation" button
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+        
+        \begin{column}{0.48\textwidth}
+            \begin{alertblock}{Results Display}
+                \begin{itemize}
+                    \item Color-coded bottleneck badges
+                    \item Queue length metrics
+                    \item Average wait time
+                    \item Utilization ($\rho$) percentage
+                    \item Traffic intensity calculation
+                \end{itemize}
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+    
+    \vspace{0.3cm}
+    
+    \begin{block}{Visual Feedback System}
+        \textcolor{red}{\textbf{Critical}} ($\rho \geq 0.95$) | 
+        \textcolor{orange}{\textbf{Warning}} ($0.85 \leq \rho < 0.95$) | 
+        \textcolor{yellow}{\textbf{Caution}} ($0.75 \leq \rho < 0.85$) | 
+        \textcolor{green}{\textbf{Healthy}} ($\rho < 0.75$)
+    \end{block}
+\end{frame}
+
+\begin{frame}{Web UI Demo: Staff Rota Optimizer}
+    \begin{block}{Checkbox-Based Configuration Interface}
+        \textbf{Design}: Card-based layout with one card per staff member
+    \end{block}
+    
+    \begin{exampleblock}{Staff Configuration Card Features}
+        \begin{itemize}
+            \item \textbf{Staff Name Header}: Color-coded by role (Nurse/Technician)
+            \item \textbf{10 Shift Checkboxes}: Mon\_AM, Mon\_PM, Tue\_AM, ..., Fri\_PM
+            \item \textbf{Quick Actions}: "Select All Shifts" and "Clear All Shifts" buttons
+            \item \textbf{Cost Input}: Cost per shift (numeric field with \$ prefix)
+            \item \textbf{Max Hours Input}: Weekly hour limit (numeric field)
+            \item \textbf{Add/Remove Buttons}: Dynamically manage staff members
+        \end{itemize}
+    \end{exampleblock}
+    
+    \begin{alertblock}{Optimization Results}
+        \textbf{Success}: Green cards showing staff-shift assignments + total cost\\
+        \textbf{Failure}: Red alert with specific issues + Yellow suggestions card with actionable fixes
+    \end{alertblock}
+    
+    \begin{block}{Real-Time Testing}
+        "Test Configuration" button validates feasibility without saving changes
+    \end{block}
+\end{frame}
+
+% ============================================================
+% SECTION: Future Work
+% ============================================================
+\section{Future Work \& Deployment}
+
+\begin{frame}{Future Enhancements \& Production Deployment}
+    \begin{alertblock}{Priority: Deploy to Production Server}
+        \textbf{Current}: Local Flask development server (localhost:5001)\\
+        \textbf{Target}: Public cloud deployment with production WSGI server
+    \end{alertblock}
+    
+    \begin{block}{Deployment Options}
+        \begin{description}
+            \item[AWS/Azure/GCP] EC2/VM with Gunicorn + Nginx + SSL (Let's Encrypt)
+            \item[Heroku/Render] Quick Git-based deployment with auto-scaling
+            \item[Docker + K8s] Containerized deployment with orchestration
+        \end{description}
+    \end{block}
+    
+    \begin{columns}[T]
+        \begin{column}{0.48\textwidth}
+            \begin{exampleblock}{Model Improvements}
+                \begin{itemize}
+                    \item Stochastic optimization (handle uncertainty)
+                    \item Multi-objective optimization (cost + fairness)
+                    \item Time-varying arrival rates
+                    \item Staff skill-based assignment
+                    \item Multi-week planning horizon
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+        
+        \begin{column}{0.48\textwidth}
+            \begin{exampleblock}{Platform Enhancements}
+                \begin{itemize}
+                    \item PostgreSQL/MySQL backend
+                    \item JWT authentication system
+                    \item Mobile app (iOS/Android)
+                    \item ML demand forecasting
+                    \item Email/SMS notifications
+                    \item Export to PDF/Excel
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% ============================================================
 % SECTION 5: Backend Implementation
 % ============================================================
 \section{Backend Implementation}
@@ -557,43 +676,6 @@ def optimize():
     \end{exampleblock}
 \end{frame}
 
-\begin{frame}{Future Enhancements}
-    \begin{columns}[T]
-        \begin{column}{0.48\textwidth}
-            \begin{block}{Short-term}
-                \begin{itemize}
-                    \item Multi-week scheduling
-                    \item Staff preference weights
-                    \item Export to PDF/Excel
-                    \item Email notifications
-                \end{itemize}
-            \end{block}
-        \end{column}
-        
-        \begin{column}{0.48\textwidth}
-            \begin{block}{Long-term}
-                \begin{itemize}
-                    \item Machine learning predictions
-                    \item Mobile application
-                    \item Database backend
-                    \item Multi-facility support
-                \end{itemize}
-            \end{block}
-        \end{column}
-    \end{columns}
-    
-    \vspace{0.5cm}
-    
-    \begin{exampleblock}{Scalability}
-        Architecture supports extension to:
-        \begin{itemize}
-            \item Larger healthcare networks
-            \item Multiple departments simultaneously
-            \item Historical data analysis and trend prediction
-        \end{itemize}
-    \end{exampleblock}
-\end{frame}
-
 % ============================================================
 % Final Slide
 % ============================================================
@@ -604,13 +686,16 @@ def optimize():
         \vspace{1cm}
         
         \normalsize
-        \textbf{Yash Sakhare}\\
-        MSL304 Assignment\\
+        \textbf{Submitted by:}\\
+        Abhikrit Bhardwaj (2022ME21333)\\
+        Sakhare Yash Balram (2022CH71496)\\
+        \vspace{0.5cm}
+        \textbf{Course:} MSL304 -- Operations Management\\
         
         \vspace{1cm}
         
         \begin{block}{Project Repository}
-            GitHub: MSL304-Assignment
+            GitHub: https://github.com/Yash04dsr/MSL304-Assignment
         \end{block}
         
         \vspace{0.5cm}
