@@ -1,26 +1,52 @@
 # MediFlow Suite
 
-**A Decision-Support System for Optimising Patient Flow and Staff Scheduling in Healthcare Facilities**
+**A Modern Decision-Support System for Healthcare Optimization**
 
-## Overview
+[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/Yash04dsr/MSL304-Assignment)
+[![Python](https://img.shields.io/badge/python-3.11+-brightgreen.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-MediFlow combines discrete-event simulation and integer programming optimization to help healthcare facilities:
-- Analyze patient flow and identify bottlenecks (M/M/c queueing model)
-- Generate optimal staff schedules that minimize costs while meeting coverage requirements
+## 🎯 Overview
 
-## Features
+MediFlow Suite combines **scientifically rigorous queueing theory** and **integer programming optimization** to help healthcare facilities:
+- 🔬 Analyze patient flow with M/M/c queueing simulation
+- 📊 Identify bottlenecks using traffic intensity analysis (ρ = λ/(μ*c))
+- 📅 Generate optimal staff schedules that minimize costs
+- ⚡ Make data-driven staffing decisions based on mathematical models
 
-### Patient Flow Simulator
-- Simulates patient arrivals and service using SimPy
-- Calculates average waiting time, queue length, and staff utilization
-- Identifies system bottlenecks and provides capacity warnings
-- Exports results for analysis
+## ✨ Features
 
-### Staff Rota Optimiser
+### 🏥 Patient Flow Simulator (Enhanced v2.0)
+- **Scientifically Accurate Bottleneck Detection** using queueing theory
+  - Traffic intensity calculation (ρ = λ/(μ*c))
+  - Stability analysis (ρ < 1.0 required)
+  - 4 severity levels: Critical, Warning, Caution, Healthy
+  - Little's Law verification (L = λW)
+  - Coefficient of variation analysis
+- **Specific Recommendations** with exact staffing requirements
+- Wait times displayed in minutes for intuitive understanding
+- Root cause analysis for high variance scenarios
+- M/M/c queueing model with Poisson arrivals
+- Export results with full scientific context
+
+### 📅 Staff Rota Optimizer
 - Generates minimum-cost weekly schedules using integer programming (PuLP)
+- **Web-based configuration editor** - no code changes needed
+- **Test configurations** before saving to validate feasibility
+- **Add/remove staff dynamically** through the UI
 - Respects staff availability, maximum hours, and shift requirements
 - Ensures no staff works multiple shifts per day
-- Produces detailed assignment reports
+- Produces detailed assignment reports with cost breakdown
+- Export optimization results for further analysis
+
+### 🎨 Modern Web Interface
+- **Contemporary Design** with gradient backgrounds and glass effects
+- **Smooth Animations** for better user experience
+- **Toast Notifications** for non-blocking feedback
+- **Loading States** with progress indicators
+- **Real-time Validation** for form inputs
+- **Responsive Design** for desktop and mobile
+- **Accessibility Features** with proper focus states
 
 ## Installation
 

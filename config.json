@@ -1,55 +1,95 @@
 {
   "simulator": {
     "default_arrival_rate": 10,
-    "default_service_rate": 4,
     "default_servers": 3,
+    "default_service_rate": 4,
     "default_simulation_hours": 50,
     "random_seed": 42,
-    "utilization_warning_threshold": 0.9,
-    "utilization_critical_threshold": 1.0
+    "utilization_critical_threshold": 1,
+    "utilization_warning_threshold": 0.9
   },
   "optimiser": {
     "staff": {
       "Nurse_A": {
         "cost": 20,
         "max_hours": 40,
-        "availability": ["Mon_AM", "Tue_AM", "Wed_AM", "Thu_AM", "Fri_AM"]
+        "availability": [
+          "Mon_AM",
+          "Tue_AM",
+          "Wed_AM",
+          "Thu_AM",
+          "Fri_AM"
+        ]
       },
       "Nurse_B": {
         "cost": 20,
         "max_hours": 40,
-        "availability": ["Mon_PM", "Tue_PM", "Wed_PM", "Thu_PM", "Fri_PM"]
+        "availability": [
+          "Mon_PM",
+          "Tue_PM",
+          "Wed_PM",
+          "Thu_PM",
+          "Fri_PM"
+        ]
       },
       "Nurse_C": {
         "cost": 22,
         "max_hours": 30,
-        "availability": ["Mon_AM", "Tue_AM", "Wed_PM", "Thu_AM", "Fri_PM"]
+        "availability": [
+          "Mon_AM",
+          "Tue_AM",
+          "Wed_PM",
+          "Thu_AM",
+          "Fri_PM"
+        ]
       },
       "Tech_D": {
         "cost": 15,
         "max_hours": 40,
-        "availability": ["Mon_AM", "Mon_PM", "Tue_AM", "Tue_PM", "Wed_AM", "Thu_PM", "Fri_AM"]
+        "availability": [
+          "Mon_AM",
+          "Mon_PM",
+          "Tue_AM",
+          "Tue_PM",
+          "Wed_AM",
+          "Thu_PM",
+          "Fri_AM"
+        ]
       }
     },
     "shift_requirements": {
-      "Mon_AM": 2, "Mon_PM": 1,
-      "Tue_AM": 2, "Tue_PM": 2,
-      "Wed_AM": 2, "Wed_PM": 1,
-      "Thu_AM": 2, "Thu_PM": 2,
-      "Fri_AM": 2, "Fri_PM": 1
+      "Fri_AM": 2,
+      "Fri_PM": 1,
+      "Mon_AM": 2,
+      "Mon_PM": 1,
+      "Thu_AM": 2,
+      "Thu_PM": 2,
+      "Tue_AM": 2,
+      "Tue_PM": 2,
+      "Wed_AM": 2,
+      "Wed_PM": 1
     },
     "shift_duration_hours": 8,
-    "days": ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    "times": ["AM", "PM"]
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "times": [
+      "AM",
+      "PM"
+    ]
   },
   "export": {
-    "results_directory": "results",
     "default_format": "json",
+    "results_directory": "results",
     "timestamp_format": "%Y%m%d_%H%M%S"
   },
   "logging": {
-    "level": "INFO",
     "file": "logs/mediflow.log",
-    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "level": "INFO"
   }
 }

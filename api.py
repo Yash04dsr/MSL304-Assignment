@@ -41,7 +41,9 @@ def api_info():
             "simulate": "/api/simulate",
             "optimize": "/api/optimize",
             "results": "/api/results/<export_id>",
+            "results_list": "/api/results",
             "config": "/api/config",
+            "config_test": "/api/config/test",
             "health": "/api/health"
         }
     })
@@ -223,11 +225,30 @@ def list_results():
 @app.route('/api/config', methods=['GET'])
 def get_config():
     """
-    Get current configuration.
+    Get current configuration with detailed structure.
     """
     try:
         config = load_config()
-        return jsonify(config)
+        
+        # Add metadata about current loaded values
+        from optimiser import STAFF, STAFF_COST, STAFF_MAX_HOURS, STAFF_AVAILABILITY, SHIFT_REQUIREMENTS
+        
+        response = {
+            "config_file": config,
+            "current_loaded": {
+                "staff": [
+                    {
+                        "name": staff,
+                        "cost": STAFF_COST.get(staff, 0),
+                        "max_hours": STAFF_MAX_HOURS.get(staff, 0),
+                        "availability": STAFF_AVAILABILITY.get(staff, [])
+                    }
+                    for staff in STAFF
+                ],
+                "shift_requirements": SHIFT_REQUIREMENTS
+            }
+        }
+        return jsonify(response)
     except Exception as e:
         logger.error(f"Error loading config: {e}")
         return jsonify({"error": str(e)}), 500
@@ -236,8 +257,7 @@ def get_config():
 @app.route('/api/config', methods=['PUT'])
 def update_config():
     """
-    Update configuration (for advanced users).
-    Note: This requires restarting the server to take effect.
+    Update configuration and save to file.
     """
     try:
         new_config = request.get_json()
@@ -246,19 +266,80 @@ def update_config():
         if not isinstance(new_config, dict):
             return jsonify({"error": "Config must be a JSON object"}), 400
         
+        # Validate optimizer config if present
+        if "optimiser" in new_config:
+            opt_config = new_config["optimiser"]
+            if "staff" in opt_config:
+                for staff_name, staff_data in opt_config["staff"].items():
+                    required_fields = ["cost", "max_hours", "availability"]
+                    for field in required_fields:
+                        if field not in staff_data:
+                            return jsonify({"error": f"Staff '{staff_name}' missing field: {field}"}), 400
+        
         # Save to config file
         with open('config.json', 'w') as f:
             json.dump(new_config, f, indent=2)
         
-        logger.info("Configuration updated")
+        logger.info("Configuration updated via API")
         
         return jsonify({
             "status": "success",
-            "message": "Configuration updated. Restart server for changes to take effect."
+            "message": "Configuration updated successfully",
+            "note": "Changes will take effect on next optimization run"
         })
         
     except Exception as e:
         logger.error(f"Error updating config: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/config/test', methods=['POST'])
+def test_config():
+    """
+    Test a configuration without saving it.
+    Runs optimization with provided config to check feasibility.
+    """
+    try:
+        test_config = request.get_json()
+        
+        if not test_config or "optimiser" not in test_config:
+            return jsonify({"error": "Must provide 'optimiser' configuration"}), 400
+        
+        # Temporarily save current config
+        import tempfile
+        import shutil
+        
+        # Backup current config
+        shutil.copy('config.json', 'config.json.backup')
+        
+        try:
+            # Write test config
+            with open('config.json', 'w') as f:
+                json.dump(test_config, f, indent=2)
+            
+            # Reload optimiser module to pick up new config
+            import importlib
+            import optimiser
+            importlib.reload(optimiser)
+            
+            # Run optimization
+            results = optimiser.run_optimisation(verbose=False, export_path=None)
+            
+            return jsonify({
+                "status": "success" if results else "infeasible",
+                "feasible": results is not None,
+                "results": results if results else None,
+                "message": "Configuration is valid" if results else "No feasible solution with this configuration"
+            })
+            
+        finally:
+            # Restore original config
+            shutil.move('config.json.backup', 'config.json')
+            # Reload again to restore original
+            importlib.reload(optimiser)
+        
+    except Exception as e:
+        logger.error(f"Error testing config: {e}")
         return jsonify({"error": str(e)}), 500
 
 

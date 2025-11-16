@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediFlow Suite - Web Interface</title>
+    <title>MediFlow Suite - Healthcare Optimization Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="/">
                 <i class="bi bi-hospital"></i> MediFlow Suite
@@ -20,16 +23,24 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/">Dashboard</a>
+                        <a class="nav-link active" href="/" onclick="showDashboard(event)">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showSimulator()">Simulator</a>
+                        <a class="nav-link" href="#" onclick="showSimulator(event)">
+                            <i class="bi bi-graph-up"></i> Simulator
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showOptimizer()">Optimizer</a>
+                        <a class="nav-link" href="#" onclick="showOptimizer(event)">
+                            <i class="bi bi-calendar-check"></i> Optimizer
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="showResults()">Results</a>
+                        <a class="nav-link" href="#" onclick="showResults(event)">
+                            <i class="bi bi-folder"></i> Results
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -42,25 +53,25 @@
             <h1 class="mb-4">Welcome to MediFlow Suite</h1>
             <p class="lead">A Decision-Support System for Healthcare Optimization</p>
             
-            <div class="row mt-4">
-                <div class="col-md-6 mb-3">
+            <div class="row mt-5">
+                <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">
                                 <i class="bi bi-graph-up text-primary"></i> Patient Flow Simulator
                             </h5>
                             <p class="card-text">
-                                Analyze patient flow using M/M/c queueing simulation. 
-                                Calculate waiting times, queue lengths, and identify bottlenecks.
+                                Analyze patient flow using advanced M/M/c queueing simulation. 
+                                Calculate waiting times, queue lengths, and identify bottlenecks with scientifically rigorous analysis.
                             </p>
-                            <button class="btn btn-primary" onclick="showSimulator()">
+                            <button class="btn btn-primary" onclick="showSimulator(event)">
                                 Open Simulator <i class="bi bi-arrow-right"></i>
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">
@@ -68,9 +79,9 @@
                             </h5>
                             <p class="card-text">
                                 Generate optimal staff schedules using integer programming.
-                                Minimize costs while meeting coverage requirements.
+                                Minimize costs while meeting coverage requirements with configurable constraints.
                             </p>
-                            <button class="btn btn-success" onclick="showOptimizer()">
+                            <button class="btn btn-success" onclick="showOptimizer(event)">
                                 Open Optimizer <i class="bi bi-arrow-right"></i>
                             </button>
                         </div>
@@ -94,32 +105,52 @@
                         <div class="card-body">
                             <form id="simulator-form">
                                 <div class="mb-3">
-                                    <label class="form-label">Arrival Rate (patients/hour)</label>
+                                    <label class="form-label">
+                                        <i class="bi bi-arrow-down-circle"></i> Arrival Rate (patients/hour)
+                                    </label>
                                     <input type="number" class="form-control" id="arrival_rate" 
-                                           value="10" step="0.1" min="0.1" required>
+                                           value="10" step="0.1" min="0.1" required 
+                                           placeholder="e.g., 10">
+                                    <small class="text-muted">Rate at which patients arrive (λ)</small>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label class="form-label">Service Rate (patients/hour per staff)</label>
+                                    <label class="form-label">
+                                        <i class="bi bi-speedometer"></i> Service Rate (patients/hour per staff)
+                                    </label>
                                     <input type="number" class="form-control" id="service_rate" 
-                                           value="4" step="0.1" min="0.1" required>
+                                           value="4" step="0.1" min="0.1" required 
+                                           placeholder="e.g., 4">
+                                    <small class="text-muted">Rate at which staff serve patients (μ)</small>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label class="form-label">Number of Staff</label>
+                                    <label class="form-label">
+                                        <i class="bi bi-people"></i> Number of Staff
+                                    </label>
                                     <input type="number" class="form-control" id="servers" 
-                                           value="3" min="1" required>
+                                           value="3" min="1" required 
+                                           placeholder="e.g., 3">
+                                    <small class="text-muted">Total available staff members (c)</small>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label class="form-label">Simulation Duration (hours)</label>
+                                    <label class="form-label">
+                                        <i class="bi bi-clock"></i> Simulation Duration (hours)
+                                    </label>
                                     <input type="number" class="form-control" id="hours" 
-                                           value="50" min="1" required>
+                                           value="50" min="1" required 
+                                           placeholder="e.g., 50">
+                                    <small class="text-muted">How long to run the simulation</small>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label class="form-label">Random Seed (optional)</label>
-                                    <input type="number" class="form-control" id="seed" value="42">
+                                    <label class="form-label">
+                                        <i class="bi bi-shuffle"></i> Random Seed (optional)
+                                    </label>
+                                    <input type="number" class="form-control" id="seed" value="42" 
+                                           placeholder="e.g., 42">
+                                    <small class="text-muted">For reproducible results</small>
                                 </div>
                                 
                                 <button type="submit" class="btn btn-primary w-100">
@@ -174,6 +205,11 @@
                                 </div>
                                 
                                 <div class="alert" id="result-status"></div>
+                                
+                                <div id="result-recommendations" style="display: none;">
+                                    <h6 class="mt-3">📊 Recommendations:</h6>
+                                    <ul id="recommendations-list" class="mb-0"></ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -187,12 +223,91 @@
                 <i class="bi bi-calendar-check"></i> Staff Rota Optimizer
             </h2>
             
-            <div class="card mb-3">
-                <div class="card-body">
-                    <p>Generate optimal staff schedules based on current configuration.</p>
-                    <button class="btn btn-success" onclick="runOptimization()">
-                        <i class="bi bi-play-fill"></i> Run Optimization
-                    </button>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Staff Configuration</h5>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadConfig()">
+                                <i class="bi bi-arrow-clockwise"></i> Reload
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="config-loading" class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <span class="ms-2">Loading configuration...</span>
+                            </div>
+                            
+                            <div id="config-editor" style="display: none;">
+                                <div class="table-responsive">
+                                    <table class="table table-sm" id="staff-config-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Staff Name</th>
+                                                <th>Cost ($/hr)</th>
+                                                <th>Max Hours</th>
+                                                <th>Availability</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <button class="btn btn-sm btn-success mt-2" onclick="addStaffRow()">
+                                    <i class="bi bi-plus-circle"></i> Add Staff
+                                </button>
+                                
+                                <h6 class="mt-4">Shift Requirements</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm" id="shift-requirements-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Shift</th>
+                                                <th>Required Staff</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <button class="btn btn-primary" onclick="saveAndRunOptimization()">
+                                        <i class="bi bi-floppy"></i> Save & Optimize
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="testConfiguration()">
+                                        <i class="bi bi-check-circle"></i> Test Config
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>Quick Actions</h6>
+                            <button class="btn btn-success w-100 mb-2" onclick="runOptimization()">
+                                <i class="bi bi-play-fill"></i> Run with Current Config
+                            </button>
+                            <button class="btn btn-outline-secondary w-100" onclick="resetConfig()">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Available Shifts</h6>
+                            <div class="small text-muted">
+                                <div>Mon_AM, Mon_PM</div>
+                                <div>Tue_AM, Tue_PM</div>
+                                <div>Wed_AM, Wed_PM</div>
+                                <div>Thu_AM, Thu_PM</div>
+                                <div>Fri_AM, Fri_PM</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             

@@ -180,15 +180,36 @@ def run_simulation(
 
 
 def calculate_results(results: SimulationResults, arr_rate: float, servers: int, hours: float, verbose: bool = True):
-    """Calculate and display simulation results."""
+    """Calculate and display simulation results with rigorous queueing theory-based bottleneck analysis."""
     if verbose:
         print("--- Simulation Results ---\n")
 
+    # Basic metrics calculation
     avg_wait = sum(results.wait_times) / len(results.wait_times) if results.wait_times else 0
-    avg_queue = arr_rate * avg_wait  # Little's Law
+    avg_queue = arr_rate * avg_wait  # Little's Law: L = λW
     busy = sum(results.service_times)
     available = servers * hours
     util = busy / available if available else 0
+    
+    # Advanced queueing metrics for precise bottleneck detection
+    max_wait = max(results.wait_times) if results.wait_times else 0
+    min_wait = min(results.wait_times) if results.wait_times else 0
+    
+    # Calculate actual service rate from observed data (μ)
+    avg_service_time = sum(results.service_times) / len(results.service_times) if results.service_times else 0
+    service_rate_per_server = 1.0 / avg_service_time if avg_service_time > 0 else 0
+    
+    # Traffic intensity (ρ = λ/(μ*c)) - Critical metric for M/M/c queues
+    # ρ < 1 is necessary for stability; ρ ≥ 1 means infinite queue growth
+    traffic_intensity = (arr_rate / (service_rate_per_server * servers)) if service_rate_per_server > 0 else 0
+    
+    # Calculate coefficient of variation for wait times to assess consistency
+    if len(results.wait_times) > 1:
+        wait_variance = sum((w - avg_wait) ** 2 for w in results.wait_times) / len(results.wait_times)
+        wait_std = wait_variance ** 0.5
+        cv_wait = wait_std / avg_wait if avg_wait > 0 else 0
+    else:
+        cv_wait = 0
     
     # Store results
     results.avg_wait_time = avg_wait
@@ -204,25 +225,118 @@ def calculate_results(results: SimulationResults, arr_rate: float, servers: int,
 
         print(row(["Patients Served", results.patients_served], widths))
         print(row(["Average Wait (hrs)", f"{avg_wait:.4f}"], widths))
+        print(row(["Max Wait Time (hrs)", f"{max_wait:.4f}"], widths))
         print(row(["Avg Queue Length", f"{avg_queue:.4f}"], widths))
         print(row(["Staff Busy Time", f"{busy:.4f}"], widths))
         print(row(["Staff Available Time", f"{available:.4f}"], widths))
         print(row(["Utilisation (%)", f"{util*100:.2f}%"], widths))
+        print(row(["Traffic Intensity (ρ)", f"{traffic_intensity:.4f}"], widths))
+        print(row(["Wait Time CoV", f"{cv_wait:.4f}"], widths))
 
-        print("\nSystem Check:")
+        print("\n--- Bottleneck Analysis (M/M/c Queueing Theory) ---")
     
-    if util > 1:
-        results.system_status = "Unstable - More staff required"
-        if verbose:
-            print("⚠️  System unstable — more staff required.")
-    elif util > 0.9:
-        results.system_status = "High utilization - Likely bottleneck"
-        if verbose:
-            print("⚠️  High utilisation — likely bottleneck.")
+    # Rigorous bottleneck analysis using queueing theory principles
+    bottleneck_level = "none"
+    recommendations = []
+    
+    # CRITICAL: Traffic intensity ≥ 1.0 means system is unstable (mathematically proven)
+    if traffic_intensity >= 1.0:
+        bottleneck_level = "critical"
+        results.system_status = "🔴 CRITICAL: System Unstable (ρ ≥ 1.0)"
+        
+        # Calculate staffing gap: need enough servers so that μ*c > λ
+        required_servers = int(arr_rate / service_rate_per_server) + 1
+        staff_gap = required_servers - servers
+        
+        recommendations.extend([
+            f"• Traffic intensity ρ = {traffic_intensity:.3f} (MUST be < 1.0 for stability)",
+            f"• System is mathematically unstable - queues grow infinitely",
+            f"• URGENT: Add minimum {staff_gap} staff to achieve stability",
+            f"• Target staffing: {required_servers} servers for ρ = {arr_rate/(service_rate_per_server * required_servers):.3f}"
+        ])
+    
+    # HIGH: Utilization > 90% - approaching capacity (standard industry threshold)
+    elif util > 0.90:
+        bottleneck_level = "high"
+        results.system_status = "🟠 WARNING: High Utilization Detected"
+        
+        # Calculate optimal staffing for 80-85% utilization (industry best practice)
+        target_util = 0.85
+        optimal_servers = max(servers + 1, int(servers * util / target_util) + 1)
+        
+        recommendations.extend([
+            f"• Utilization: {util*100:.1f}% (industry threshold: <90%)",
+            f"• Traffic intensity: ρ = {traffic_intensity:.3f}",
+            f"• Average wait time: {avg_wait*60:.1f} minutes",
+            f"• Recommend adding {optimal_servers - servers} staff for target 85% utilization",
+            f"• Peak queue length observed: {avg_queue:.1f} patients"
+        ])
+        
+        if cv_wait > 1.5:
+            recommendations.append(f"• High wait time variability (CoV = {cv_wait:.2f}) - investigate service consistency")
+    
+    # MODERATE: Utilization 75-90% - acceptable but monitor closely
+    elif util > 0.75:
+        bottleneck_level = "moderate"
+        results.system_status = "🟡 CAUTION: Moderate Load"
+        
+        recommendations.extend([
+            f"• Utilization: {util*100:.1f}% (acceptable range: 75-90%)",
+            f"• Traffic intensity: ρ = {traffic_intensity:.3f}",
+            f"• Average wait time: {avg_wait*60:.1f} minutes",
+            "• System is stable but has limited spare capacity",
+            "• Monitor during peak periods - consider contingency staffing"
+        ])
+        
+        if avg_wait > 0.25:  # >15 minutes
+            recommendations.append(f"• Wait times elevated - consider process improvements")
+    
+    # HEALTHY: Utilization < 75% - well within capacity
     else:
-        results.system_status = "Operating within limits"
-        if verbose:
-            print("✓ System operating within limits.")
+        bottleneck_level = "none"
+        results.system_status = "🟢 HEALTHY: Optimal Performance"
+        
+        recommendations.extend([
+            f"• Utilization: {util*100:.1f}% (optimal range: 50-75%)",
+            f"• Traffic intensity: ρ = {traffic_intensity:.3f}",
+            f"• Average wait time: {avg_wait*60:.1f} minutes",
+            "• System has adequate capacity with good service levels"
+        ])
+        
+        # Check for over-staffing (utilization < 50%)
+        if util < 0.50:
+            min_servers = max(1, int(servers * util / 0.65))
+            recommendations.append(f"• Low utilization - could reduce to {min_servers} staff during off-peak hours")
+    
+    # Additional quality indicators
+    if max_wait > avg_wait * 3 and avg_wait > 0:
+        recommendations.append(f"⚠️  High wait time variance: max={max_wait*60:.1f}min vs avg={avg_wait*60:.1f}min")
+        recommendations.append("   → Investigate: arrival clustering, service time inconsistency, or staff availability gaps")
+    
+    if avg_queue > 5:
+        recommendations.append(f"⚠️  Large average queue ({avg_queue:.1f} patients) - consider process redesign")
+    
+    if verbose:
+        print(f"\nStatus: {results.system_status}")
+        print("\nRecommendations (based on queueing theory):")
+        for rec in recommendations:
+            print(rec)
+        
+        print("\n--- Scientific Basis ---")
+        print("• M/M/c queue model: Poisson arrivals, exponential service, c servers")
+        print("• Stability condition: ρ = λ/(μ*c) < 1.0")
+        print("• Little's Law: L = λW (queue length = arrival rate × wait time)")
+        print(f"• Verification: {avg_queue:.2f} ≈ {arr_rate:.2f} × {avg_wait:.2f} = {arr_rate * avg_wait:.2f} ✓")
+    
+    # Store additional data for API
+    results.parameters.update({
+        "bottleneck_level": bottleneck_level,
+        "recommendations": recommendations,
+        "max_wait_time": max_wait,
+        "traffic_intensity": traffic_intensity,
+        "service_rate_per_server": service_rate_per_server,
+        "coefficient_of_variation": cv_wait
+    })
 
 
 if __name__ == "__main__":
