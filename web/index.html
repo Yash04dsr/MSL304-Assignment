@@ -239,21 +239,13 @@
                             </div>
                             
                             <div id="config-editor" style="display: none;">
-                                <div class="table-responsive">
-                                    <table class="table table-sm" id="staff-config-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Staff Name</th>
-                                                <th>Cost ($/hr)</th>
-                                                <th>Max Hours</th>
-                                                <th>Availability</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                                <button class="btn btn-sm btn-success mt-2" onclick="addStaffRow()">
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-info-circle"></i> Configure staff availability by checking the shifts they can work
+                                </p>
+                                
+                                <div id="staff-config-container"></div>
+                                
+                                <button class="btn btn-sm btn-success mt-2" onclick="addStaffMember()">
                                     <i class="bi bi-plus-circle"></i> Add Staff
                                 </button>
                                 

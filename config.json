@@ -1,30 +1,24 @@
 {
-  "simulator": {
-    "default_arrival_rate": 10,
-    "default_servers": 3,
-    "default_service_rate": 4,
-    "default_simulation_hours": 50,
-    "random_seed": 42,
-    "utilization_critical_threshold": 1,
-    "utilization_warning_threshold": 0.9
-  },
   "optimiser": {
     "staff": {
       "Nurse_A": {
-        "cost": 20,
+        "cost": 25,
         "max_hours": 40,
         "availability": [
           "Mon_AM",
+          "Mon_PM",
           "Tue_AM",
-          "Wed_AM",
-          "Thu_AM",
-          "Fri_AM"
+          "Tue_PM",
+          "Wed_PM",
+          "Thu_PM",
+          "Fri_PM"
         ]
       },
       "Nurse_B": {
-        "cost": 20,
-        "max_hours": 40,
+        "cost": 25,
+        "max_hours": 50,
         "availability": [
+          "Mon_AM",
           "Mon_PM",
           "Tue_PM",
           "Wed_PM",
@@ -33,41 +27,44 @@
         ]
       },
       "Nurse_C": {
-        "cost": 22,
-        "max_hours": 30,
+        "cost": 25,
+        "max_hours": 40,
         "availability": [
-          "Mon_AM",
+          "Mon_PM",
           "Tue_AM",
-          "Wed_PM",
+          "Wed_AM",
           "Thu_AM",
-          "Fri_PM"
+          "Fri_AM"
         ]
       },
       "Tech_D": {
-        "cost": 15,
-        "max_hours": 40,
+        "cost": 20,
+        "max_hours": 48,
         "availability": [
           "Mon_AM",
           "Mon_PM",
           "Tue_AM",
           "Tue_PM",
           "Wed_AM",
+          "Wed_PM",
+          "Thu_AM",
           "Thu_PM",
-          "Fri_AM"
+          "Fri_AM",
+          "Fri_PM"
         ]
       }
     },
     "shift_requirements": {
-      "Fri_AM": 2,
+      "Fri_AM": 1,
       "Fri_PM": 1,
       "Mon_AM": 2,
-      "Mon_PM": 1,
+      "Mon_PM": 2,
       "Thu_AM": 2,
       "Thu_PM": 2,
       "Tue_AM": 2,
       "Tue_PM": 2,
       "Wed_AM": 2,
-      "Wed_PM": 1
+      "Wed_PM": 2
     },
     "shift_duration_hours": 8,
     "days": [
@@ -81,15 +78,5 @@
       "AM",
       "PM"
     ]
-  },
-  "export": {
-    "default_format": "json",
-    "results_directory": "results",
-    "timestamp_format": "%Y%m%d_%H%M%S"
-  },
-  "logging": {
-    "file": "logs/mediflow.log",
-    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    "level": "INFO"
   }
 }

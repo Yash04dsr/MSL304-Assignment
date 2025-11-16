@@ -151,11 +151,20 @@ def optimize():
             export_path=export_path
         )
         
+        # Check if infeasible
+        if results and not results.get("feasible", True):
+            return jsonify({
+                "status": "infeasible",
+                "message": results.get("message", "No feasible solution found"),
+                "analysis": results.get("analysis", {}),
+                "timestamp": datetime.now().isoformat()
+            }), 200
+        
         if results is None:
             return jsonify({
                 "status": "error",
-                "message": "No feasible solution found"
-            }), 400
+                "message": "Optimization failed"
+            }), 500
         
         return jsonify({
             "status": "success",
@@ -230,8 +239,9 @@ def get_config():
     try:
         config = load_config()
         
-        # Add metadata about current loaded values
-        from optimiser import STAFF, STAFF_COST, STAFF_MAX_HOURS, STAFF_AVAILABILITY, SHIFT_REQUIREMENTS
+        # Get current configuration (reloaded from file)
+        from optimiser import get_current_config
+        current_cfg = get_current_config()
         
         response = {
             "config_file": config,
@@ -239,13 +249,13 @@ def get_config():
                 "staff": [
                     {
                         "name": staff,
-                        "cost": STAFF_COST.get(staff, 0),
-                        "max_hours": STAFF_MAX_HOURS.get(staff, 0),
-                        "availability": STAFF_AVAILABILITY.get(staff, [])
+                        "cost": current_cfg["staff_cost"].get(staff, 0),
+                        "max_hours": current_cfg["staff_max_hours"].get(staff, 0),
+                        "availability": current_cfg["staff_availability"].get(staff, [])
                     }
-                    for staff in STAFF
+                    for staff in current_cfg["staff"]
                 ],
-                "shift_requirements": SHIFT_REQUIREMENTS
+                "shift_requirements": current_cfg["shift_requirements"]
             }
         }
         return jsonify(response)
@@ -317,26 +327,29 @@ def test_config():
             with open('config.json', 'w') as f:
                 json.dump(test_config, f, indent=2)
             
-            # Reload optimiser module to pick up new config
-            import importlib
-            import optimiser
-            importlib.reload(optimiser)
+            # Run optimization (it will automatically reload config from file)
+            from optimiser import run_optimisation
+            results = run_optimisation(verbose=False, export_path=None)
             
-            # Run optimization
-            results = optimiser.run_optimisation(verbose=False, export_path=None)
+            # Check if infeasible
+            if results and not results.get("feasible", True):
+                return jsonify({
+                    "status": "infeasible",
+                    "feasible": False,
+                    "message": results.get("message", "No feasible solution with this configuration"),
+                    "analysis": results.get("analysis", {})
+                })
             
             return jsonify({
-                "status": "success" if results else "infeasible",
+                "status": "success" if results else "error",
                 "feasible": results is not None,
                 "results": results if results else None,
-                "message": "Configuration is valid" if results else "No feasible solution with this configuration"
+                "message": "Configuration is valid" if results else "Configuration test failed"
             })
             
         finally:
             # Restore original config
             shutil.move('config.json.backup', 'config.json')
-            # Reload again to restore original
-            importlib.reload(optimiser)
         
     except Exception as e:
         logger.error(f"Error testing config: {e}")
